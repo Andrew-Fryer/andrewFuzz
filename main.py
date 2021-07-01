@@ -23,11 +23,11 @@ class BinaryStream:
 
 class ParsingProgress:
     # this class is a named tuple which stores the progress of a parse
-    def __init__(self, ast, stream):
-        self.ast = ast
+    def __init__(self, data_model, stream):
+        self.data_model = data_model
         self.stream = stream
     def get_tuple(self):
-        return self.ast, self.stream
+        return self.data_model, self.stream
 
 class DataModel:
     # borrowing the name "DataModel" from Peach Fuzzer
@@ -142,8 +142,8 @@ class Sequence(NonTerminal):
             assert len(results) <= 1 # TODO: remove this
             if len(results) == 0:
                 return []
-            child_ast, stream = results[0].get_tuple()
-            children.append(child_ast)
+            child_data_model, stream = results[0].get_tuple()
+            children.append(child_data_model)
         yield ParsingProgress(Sequence(children=children), stream)
     def __init__(self, children=[]):
         self.children = children # todo: change children to be a dict so that we can name each field
