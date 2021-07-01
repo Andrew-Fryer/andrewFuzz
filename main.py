@@ -1,5 +1,7 @@
 from bitarray import bitarray, util as bitarray_util # this gives us performant, bit-wise binary operations (Python's stock binary operations are all byte-wise)
 
+# TODO: use inheritence to yet rid of the icky duplcate methods
+
 class BinaryStream:
     # this class is wrapper for a bitarray
     # the idea is to avoid copying the actual data unless we really need to
@@ -86,23 +88,44 @@ class Flag(Terminal):
         return self.data
 
 class Blob(Terminal):
-    def _num_bits(self):
-        # TODO: add parent reference to all grammar constructors because they need to be linked in both directions
-        self.num_bits or self.get_num_bits(self)
+    # used when length is known at before parse-time
     def parse(self, stream):
-        data = stream.eat(self._num_bits())
-        yield ParsingProgress(Blob(data), stream)
-    def __init__(self, data=bitarray('00000000'), num_bits = None, get_num_bits=None):
-        self.num_bits = num_bits # used when length is known at before parse-time
-        self.get_num_bits = get_num_bits # used when length is only known at parse-time
-        assert isinstance(self.num_bits, int) or callable(self.get_num_bits)
-        self.data = data
+        data = stream.eat(self.num_bits)
+        yield ParsingProgress(Blob(data, num_bits=self.num_bits), stream)
+    def __init__(self, data=bitarray(''), num_bits=0):
+        self.num_bits = num_bits
+        self.data = data if data != None else bitarray('0' * self.num_bits)
+    def __str__(self):
+        return self.data.to01()
     def get_value(self):
         return bitarray_util.ba2int(self.data)
     def fuzz(self):
-        yield Blob(bitarray('0' * self._num_bits()))
-        yield Blob(bitarray('1' * self._num_bits()))
-        yield Blob(bitarray('1'))
+        yield Blob(bitarray('0' * self.num_bits))
+        yield Blob(bitarray('1' * self.num_bits))
+        yield Blob(bitarray('')) # this breaks the structure
+    def serialize(self):
+        return self.data
+
+class DynamicBlob(Terminal):
+    # used when length is only known at parse-time
+    # Warning! param get_num_bits must be ideponent
+    # TODO: add parent reference to all grammar constructors because they need to be linked in both directions
+    def parse(self, stream):
+        num_bits = self.get_num_bits(self)
+        data = stream.eat(num_bits)
+        yield ParsingProgress(DynamicBlob(data, get_num_bits=self.get_num_bits), stream)
+    def __init__(self, data=bitarray(''), get_num_bits=lambda this: 0):
+        self.get_num_bits = get_num_bits
+        self.data = data
+    def __str__(self):
+        return self.data.to01()
+    def get_value(self):
+        return bitarray_util.ba2int(self.data)
+    def fuzz(self):
+        num_bits = len(self.data)
+        yield Blob(bitarray('0' * num_bits))
+        yield Blob(bitarray('1' * num_bits))
+        yield Blob(bitarray('')) # this breaks the structure
     def serialize(self):
         return self.data
 
