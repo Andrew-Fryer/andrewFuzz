@@ -11,9 +11,11 @@ class BinaryStream:
     def eat(self, num_bits=8):
         new_pos = self.pos + num_bits
         assert new_pos / 8 <= len(self.bits)
-        result = self.bits[pos:pos + num_bits]
-        pos += num_bits
+        result = self.bits[self.pos:self.pos + num_bits]
+        self.pos += num_bits
         return result
+    def __len__(self):
+        return len(self.bits) - self.pos
 
 class ParsingProgress:
     # this class is a named tuple which stores the progress of a parse
@@ -21,7 +23,7 @@ class ParsingProgress:
         self.ast = ast
         self.stream = stream
     def get_tuple(self):
-        return ast, stream
+        return self.ast, self.stream
 
 class DataModel:
     # borrowing the name "DataModel" from Peach Fuzzer
@@ -57,29 +59,29 @@ class Terminal(DataModel):
 class Byte(Terminal):
     def parse(self, stream):
         data = stream.eat(8)
-        yield ParsingProgress(self(data), stream)
+        yield ParsingProgress(Byte(data), stream)
     def __init__(self, data=bitarray('00000000')):
         self.data = data
     def __str__(self):
         return self.data.to01()
     def fuzz(self):
-        yield self(bitarray('00000000'))
-        yield self(bitarray('11111111'))
-        yield self(bitarray('10101010'))
+        yield Byte(bitarray('00000000'))
+        yield Byte(bitarray('11111111'))
+        yield Byte(bitarray('10101010'))
     def serialize(self):
         return self.data
 
 class Flag(Terminal):
     def parse(self, stream):
         data = stream.eat(1)
-        yield ParsingProgress(self(data), stream)
+        yield ParsingProgress(Flag(data), stream)
     def __init__(self, data=bitarray('0')):
         self.data = data
     def __str__(self):
         return self.data.to01()
     def fuzz(self):
-        yield self(bitarray('0'))
-        yield self(bitarray('1'))
+        yield Flag(bitarray('0'))
+        yield Flag(bitarray('1'))
     def serialize(self):
         return self.data
 
@@ -89,7 +91,7 @@ class Blob(Terminal):
         self.num_bits or self.get_num_bits(self)
     def parse(self, stream):
         data = stream.eat(self._num_bits())
-        yield ParsingProgress(self(data), stream)
+        yield ParsingProgress(Blob(data), stream)
     def __init__(self, data=bitarray('00000000'), num_bits = None, get_num_bits=None):
         self.num_bits = num_bits # used when length is known at before parse-time
         self.get_num_bits = get_num_bits # used when length is only known at parse-time
@@ -98,9 +100,9 @@ class Blob(Terminal):
     def get_value(self):
         return bitarray_util.ba2int(self.data)
     def fuzz(self):
-        yield self(bitarray('0' * self._num_bits()))
-        yield self(bitarray('1' * self._num_bits()))
-        yield self(bitarray('1'))
+        yield Blob(bitarray('0' * self._num_bits()))
+        yield Blob(bitarray('1' * self._num_bits()))
+        yield Blob(bitarray('1'))
     def serialize(self):
         return self.data
 
@@ -109,21 +111,27 @@ class Sequence(NonTerminal):
     def parse(self, stream):
         children = []
         for child in self.children:
-            results = child.parse(stream)
+            results = list(child.parse(stream))
             assert len(results) <= 1
             if len(results) == 0:
                 return []
-            child_ast, stream = results[0]
+            child_ast, stream = results[0].get_tuple()
             children.append(child_ast)
-        return self(children)
+        yield ParsingProgress(Sequence(children=children), stream)
     def __init__(self, children=[]):
-        self.children = children
+        self.children = children # todo: change children to be a dict so that we can name each field
+    def __str__(self):
+        result = "{\n"
+        for child in self.children:
+            result += "\t" + str(child) + ",\n"
+        result += "}"
+        return result
     def fuzz(self):
         for i in range(len(self.children)):
-            mutated_children = children[:]
-            for mutated_child in children[i].fuzz():
+            mutated_children = self.children[:]
+            for mutated_child in self.children[i].fuzz():
                 mutated_children[i] = mutated_child
-                yield self(mutated_children)
+                yield Sequence(mutated_children)
     def serialize(self):
         result = bitarray()
         for child in self.children:
