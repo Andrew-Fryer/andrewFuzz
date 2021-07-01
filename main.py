@@ -3,10 +3,12 @@
 from bitarray import bitarray, util as bitarray_util # this gives us performant, bit-wise binary operations (Python's stock binary operations are all byte-wise)
 
 # TODO: use inheritence to yet rid of the icky duplcate methods
+# TODO: implement some nice clone methods so that I don't have to pass tons of crap into constructors during parsing and fuzzing
 
 class BinaryStream:
     # this class is wrapper for a bitarray
     # the idea is to avoid copying the actual data unless we really need to
+    # note that this class is immutable to enable easy back-tracking
     def __init__(self, bits, pos=0):
         self.bits = bits
         self.pos = pos
@@ -16,10 +18,9 @@ class BinaryStream:
         # returns None if we don't have enough bits
         new_pos = self.pos + num_bits
         if new_pos > len(self.bits):
-            return None
-        result = self.bits[self.pos:self.pos + num_bits]
-        self.pos += num_bits
-        return result
+            return None, self
+        result = self.bits[self.pos:new_pos]
+        return result, BinaryStream(self.bits, new_pos)
     def __len__(self):
         return len(self.bits) - self.pos
 
@@ -66,7 +67,7 @@ class Terminal(DataModel):
 
 class Byte(Terminal):
     def parse(self, stream):
-        data = stream.eat(8)
+        data, stream = stream.eat(8)
         if data != None:
             yield ParsingProgress(Byte(data), stream)
     def __init__(self, data=bitarray('00000000')):
@@ -82,7 +83,7 @@ class Byte(Terminal):
 
 class Flag(Terminal):
     def parse(self, stream):
-        data = stream.eat(1)
+        data, stream = stream.eat(1)
         if data != None:
             yield ParsingProgress(Flag(data), stream)
     def __init__(self, data=bitarray('0')):
@@ -98,7 +99,7 @@ class Flag(Terminal):
 class Blob(Terminal):
     # used when length is known at before parse-time
     def parse(self, stream):
-        data = stream.eat(self.num_bits)
+        data, stream = stream.eat(self.num_bits)
         if data != None:
             yield ParsingProgress(Blob(data, num_bits=self.num_bits), stream)
     def __init__(self, data=None, num_bits=0):
@@ -121,7 +122,7 @@ class DynamicBlob(Terminal):
     # TODO: add parent reference to all grammar constructors because they need to be linked in both directions
     def parse(self, stream):
         num_bits = self.get_num_bits(self)
-        data = stream.eat(num_bits)
+        data, stream = stream.eat(num_bits)
         if data != None:
             yield ParsingProgress(DynamicBlob(data, get_num_bits=self.get_num_bits), stream)
     def __init__(self, data=bitarray(''), get_num_bits=lambda this: 0):
@@ -198,8 +199,6 @@ class Union(NonTerminal):
             result += "\t| " + str(child) + " ***" if child == self.child else "" + "\n"
         result += ")"
         return result
-    def fuzz(self):
-        return self.child.fuzz() # note that this return value is an iterator
     def serialize(self):
         return self.child.serialize()
 
@@ -209,11 +208,18 @@ class PureUnion(Union):
         parses = []
         for child in self.potential_children:
             for parse in child.parse(stream):
-                yield parse
+                child_data_model, child_stream = parse.get_tuple()
+                yield ParsingProgress(
+                    PureUnion(potential_children=self.potential_children, child=child_data_model),
+                    child_stream,
+                )
     def __init__(self, potential_children, child=None):
         assert len(potential_children) > 0
         self.potential_children = potential_children
         self.child = child if child != None else potential_children[0]
+    def fuzz(self):
+        for child_data_model in self.child.fuzz():
+            yield PureUnion(potential_children=self.potential_children, child=child_data_model)
 
 class ChoiceUnion(Union):
     # this is a union in which the option is determined by an expression whose value is determined at parse-time

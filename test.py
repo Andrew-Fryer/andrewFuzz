@@ -10,14 +10,25 @@ my_data_model = Sequence(children=[
 ])
 results = my_data_model.parse(stream)
 
-ast, stream = list(results)[0].get_tuple()
+data_model, stream = list(results)[0].get_tuple()
 
 assert len(stream) == 0
-print('ast looks like:', ast)
+print('data model looks like:', data_model)
 
-fuzz = ast.fuzz()
+fuzz = data_model.fuzz()
 print('here is the fuzz:')
-for ast in fuzz:
-    print('\t' + str(ast.serialize()))
+for data_model in fuzz:
+    print('\t' + str(data_model.serialize()))
+
+
+# test alternation
+stream = BinaryStream(bitarray('00001111'))
+my_data_model = PureUnion(potential_children=[
+    Byte(), # succeeds
+    Flag(), # succeeds leaving 7 bits
+    Blob(num_bits=9), # fails
+    DynamicBlob(get_num_bits=lambda this: 8), # succeeds
+])
+results = list(my_data_model.parse(stream))
 
 pass
