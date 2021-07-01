@@ -1,3 +1,5 @@
+# Andrew Fryer 2021
+
 from bitarray import bitarray, util as bitarray_util # this gives us performant, bit-wise binary operations (Python's stock binary operations are all byte-wise)
 
 # TODO: use inheritence to yet rid of the icky duplcate methods
@@ -43,20 +45,22 @@ class DataModel:
         pass
 
 class NonTerminal(DataModel):
-    def __init__(self, children=[], allow_recursion=False):
-        self._allow_recursion = allow_recursion # used to allow recursion in a DataModel when used as a grammar, and not when used as an AST
-        for child in children:
-            child.set_parent(self)
-    def set_parent(self, parent):
-        if self._allow_recursion:
-            self.parent = (self.parent or []).append(parent)
-        assert not self.parent
-        self.parent = parent
+    # def __init__(self, children=[], allow_recursion=False):
+    #     self._allow_recursion = allow_recursion # used to allow recursion in a DataModel when used as a grammar, and not when used as an AST
+    #     for child in children:
+    #         child.set_parent(self)
+    # def set_parent(self, parent):
+    #     if self._allow_recursion:
+    #         self.parent = (self.parent or []).append(parent)
+    #     assert not self.parent
+    #     self.parent = parent
+    pass
 
 class Terminal(DataModel):
-    def set_parent(self, parent):
-        assert not self.parent
-        self.parent = parent
+    # def set_parent(self, parent):
+    #     assert not self.parent
+    #     self.parent = parent
+    pass
 
 class Byte(Terminal):
     def parse(self, stream):
@@ -92,7 +96,7 @@ class Blob(Terminal):
     def parse(self, stream):
         data = stream.eat(self.num_bits)
         yield ParsingProgress(Blob(data, num_bits=self.num_bits), stream)
-    def __init__(self, data=bitarray(''), num_bits=0):
+    def __init__(self, data=None, num_bits=0):
         self.num_bits = num_bits
         self.data = data if data != None else bitarray('0' * self.num_bits)
     def __str__(self):
@@ -135,7 +139,7 @@ class Sequence(NonTerminal):
         children = []
         for child in self.children:
             results = list(child.parse(stream))
-            assert len(results) <= 1
+            assert len(results) <= 1 # TODO: remove this
             if len(results) == 0:
                 return []
             child_ast, stream = results[0].get_tuple()
@@ -181,11 +185,29 @@ class TerminatedSet(Set):
 class Union(NonTerminal):
     # this is analogous to an array in c
     # this is an abstract class that does not know how to determine which option to parse
-    pass
+    def __str__(self):
+        # TODO: allow child to have multiple lines
+        result = "(\n"
+        for child in self.potential_children:
+            result += "\t| " + str(child) + " ***" if child == self.child else "" + "\n"
+        result += ")"
+        return result
+    def fuzz(self):
+        return self.child.fuzz() # note that this return value is an iterator
+    def serialize(self):
+        return self.child.serialize()
 
 class PureUnion(Union):
     # this is a union in which all options are tried (even if a previous option's parse is successful)
-    pass
+    def parse(self, stream):
+        parses = []
+        for child in self.potential_children:
+            for parse in child.parse(stream):
+                yield parse
+    def __init__(self, potential_children, child=None):
+        assert len(potential_children) > 0
+        self.potential_children = potential_children
+        self.child = child if child != None else potential_children[0]
 
 class ChoiceUnion(Union):
     # this is a union in which the option is determined by an expression whose value is determined at parse-time
