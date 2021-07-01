@@ -13,8 +13,10 @@ class BinaryStream:
     def clone(self):
         return BinaryStream(self.bits, self.pos)
     def eat(self, num_bits=8):
+        # returns None if we don't have enough bits
         new_pos = self.pos + num_bits
-        assert new_pos / 8 <= len(self.bits)
+        if new_pos > len(self.bits):
+            return None
         result = self.bits[self.pos:self.pos + num_bits]
         self.pos += num_bits
         return result
@@ -65,7 +67,8 @@ class Terminal(DataModel):
 class Byte(Terminal):
     def parse(self, stream):
         data = stream.eat(8)
-        yield ParsingProgress(Byte(data), stream)
+        if data != None:
+            yield ParsingProgress(Byte(data), stream)
     def __init__(self, data=bitarray('00000000')):
         self.data = data
     def __str__(self):
@@ -80,7 +83,8 @@ class Byte(Terminal):
 class Flag(Terminal):
     def parse(self, stream):
         data = stream.eat(1)
-        yield ParsingProgress(Flag(data), stream)
+        if data != None:
+            yield ParsingProgress(Flag(data), stream)
     def __init__(self, data=bitarray('0')):
         self.data = data
     def __str__(self):
@@ -95,7 +99,8 @@ class Blob(Terminal):
     # used when length is known at before parse-time
     def parse(self, stream):
         data = stream.eat(self.num_bits)
-        yield ParsingProgress(Blob(data, num_bits=self.num_bits), stream)
+        if data != None:
+            yield ParsingProgress(Blob(data, num_bits=self.num_bits), stream)
     def __init__(self, data=None, num_bits=0):
         self.num_bits = num_bits
         self.data = data if data != None else bitarray('0' * self.num_bits)
@@ -117,7 +122,8 @@ class DynamicBlob(Terminal):
     def parse(self, stream):
         num_bits = self.get_num_bits(self)
         data = stream.eat(num_bits)
-        yield ParsingProgress(DynamicBlob(data, get_num_bits=self.get_num_bits), stream)
+        if data != None:
+            yield ParsingProgress(DynamicBlob(data, get_num_bits=self.get_num_bits), stream)
     def __init__(self, data=bitarray(''), get_num_bits=lambda this: 0):
         self.get_num_bits = get_num_bits
         self.data = data
