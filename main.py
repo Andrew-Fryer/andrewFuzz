@@ -3,7 +3,9 @@
 from bitarray import bitarray, util as bitarray_util # this gives us performant, bit-wise binary operations (Python's stock binary operations are all byte-wise)
 
 # TODO: use inheritence to yet rid of the icky duplcate methods
-# TODO: implement some nice clone methods so that I don't have to pass tons of crap into constructors during parsing and fuzzing
+# TODO: implement some nice clone methods so that I don't have to pass tons of crap into constructors in parse and fuzz methods
+# rename `fuzz` to `get_mutations`?
+# TODO: make contexts work so that 'dynamic' data models are useful
 
 class BinaryStream:
     # this class is wrapper for a bitarray
@@ -32,7 +34,23 @@ class ParsingProgress:
     def get_tuple(self):
         return self.data_model, self.stream
 
-class DataModel:
+class Parser:
+    def parse(self, stream):
+        pass
+
+class AST:
+    def __str__(self):
+        pass
+
+class Fuzzer:
+    def fuzz(self):
+        pass
+
+class Serializer:
+    def serialize(self):
+        pass
+
+class DataModel(Parser, Fuzzer, Serializer): # wait a minute, why don't I use composition here?
     # borrowing the name "DataModel" from Peach Fuzzer
     # An instance of this class is a:
     # -grammar    -> writing a grammar is done by calling the constructor
@@ -40,12 +58,7 @@ class DataModel:
     # -AST        -> it stores 
     # -fuzzer     -> it can produce mutated versions of itself (new instances of this class)
     # -serializer -> it can deparse its state by performing an inorder tree traversal
-    def parse(self, stream):
-        pass
-    def fuzz(self):
-        pass
-    def serialize(self):
-        pass
+    pass
 
 class NonTerminal(DataModel):
     # def __init__(self, children=[], allow_recursion=False):
@@ -177,20 +190,24 @@ class Set(NonTerminal):
     # this is an abstract class that does not know how the length of the set is determined
     pass
 
-class LenSet(Set):
+class LengthSet(Set):
     # this is a set in which the length is known before parse-time
     pass
 
-class DynamicLenSet(Set):
-    # this is a set in which the length is determined by an expression whose value is known only at parse-time
+class DynamicLengthSet(Set):
+    # this is a set in which the length is known only at parse-time
     pass
 
 class TerminatedSet(Set):
-    # this is a set in which the end of the set is indicated by a special terminator symbol
+    # this is a set in which the end of the set is indicated by some condition
+    pass
+
+class SymbolTerminatedSet(Set):
+    # this is a set in which the end of the set is indicated by some special symbol
     pass
 
 class Union(NonTerminal):
-    # this is analogous to an array in c
+    # this is analogous to a union in c
     # this is an abstract class that does not know how to determine which option to parse
     def __str__(self):
         # TODO: allow child to have multiple lines
@@ -222,5 +239,5 @@ class PureUnion(Union):
             yield PureUnion(potential_children=self.potential_children, child=child_data_model)
 
 class ChoiceUnion(Union):
-    # this is a union in which the option is determined by an expression whose value is determined at parse-time
+    # this is a union in which the option is determined at parse-time
     pass
