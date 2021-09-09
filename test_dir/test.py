@@ -1,7 +1,6 @@
-from bitarray import bitarray, util as bitarray_util
-from main import *
+from src.__init__ import *
 
-stream = BinaryStream(bitarray('000000001000000000011111'))
+stream = BinaryStream('000000001000000000011111')
 my_data_model = Sequence(children=[
     Byte(),
     Flag(),
@@ -22,7 +21,7 @@ for data_model in fuzz:
 
 
 # test alternation
-stream = BinaryStream(bitarray('00001111'))
+stream = BinaryStream('00001111')
 my_data_model = PureUnion(potential_children=[
     Byte(), # succeeds
     Flag(), # succeeds leaving 7 bits

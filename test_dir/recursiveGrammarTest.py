@@ -1,5 +1,6 @@
 from bitarray import bitarray, util as bitarray_util
-from main import *
+
+from . import *
 
 stream = BinaryStream(bitarray('000000001000000000011111'))
 my_data_model = Sequence(children=[

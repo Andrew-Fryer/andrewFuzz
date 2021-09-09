@@ -1,0 +1,11 @@
+# TODO: use inheritence to yet rid of the icky duplcate methods
+# TODO: implement some nice clone methods so that I don't have to pass tons of crap into constructors in parse and fuzz methods
+# rename `fuzz` to `get_mutations`?
+# TODO: make contexts work so that 'dynamic' data models are useful
+
+
+
+Hey, let's think about this for a second...
+A grammar does not store data and is an un-restricted, directed graph.
+An AST stores data and is a tree.
+
