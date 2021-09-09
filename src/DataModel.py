@@ -1,18 +1,18 @@
 class Parser:
     def parse(self, stream):
-        pass
+        raise NotImplementedError
 
 class AST:
     def __str__(self):
-        pass
+        raise NotImplementedError
 
 class Fuzzer:
     def fuzz(self):
-        pass
+        raise NotImplementedError
 
 class Serializer:
     def serialize(self):
-        pass
+        raise NotImplementedError
 
 class DataModel(Parser, Fuzzer, Serializer): # wait a minute, why don't I use composition here?
     # borrowing the name "DataModel" from Peach Fuzzer
