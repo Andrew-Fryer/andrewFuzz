@@ -2,7 +2,7 @@ from bitarray import bitarray, util as bitarray_util
 
 from src.__init__ import *
 
-stream = BinaryStream(bitarray('0000 0000  0'))
+stream = BinaryStream(bitarray('0000 0000  0000 0000  1'))
 my_data_model = Shell()
 my_data_model.value = Sequence(children=[
     Byte(),
@@ -12,8 +12,9 @@ my_data_model.value = Sequence(children=[
     ])
 ])
 results = my_data_model.parse(stream)
+results_list = list(results)
 
-ast, stream = list(results)[0].get_tuple()
+ast, stream = results_list[1].get_tuple() # the 1 is a hack...
 
 assert len(stream) == 0
 print('ast looks like:', ast)

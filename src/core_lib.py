@@ -100,15 +100,18 @@ class DynamicBlob(Terminal):
 class Sequence(NonTerminal):
     # This is analogous to a struct in c
     def parse(self, stream):
-        children = []
+        current_progress = [([], stream)]
         for child in self.children:
-            results = list(child.parse(stream))
-            assert len(results) <= 1 # TODO: remove this
-            if len(results) == 0:
-                return []
-            child_data_model, stream = results[0].get_tuple()
-            children.append(child_data_model)
-        yield ParsingProgress(Sequence(children=children), stream)
+            next_progress = []
+            for parsed_children, remaining_stream in current_progress:
+                results = list(child.parse(remaining_stream))
+                for result in results:
+                    new_child, result_stream = result.get_tuple()
+                    next_progress.append((parsed_children + [new_child], result_stream))
+            
+            current_progress = next_progress
+        for children, remaining_stream in current_progress:
+            yield ParsingProgress(Sequence(children=children), remaining_stream)
     def __init__(self, children=[]):
         self.children = children # todo: change children to be a dict so that we can name each field
     def __str__(self):
