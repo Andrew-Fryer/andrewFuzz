@@ -183,5 +183,5 @@ class PureUnion(Union):
             yield PureUnion(potential_children=self.potential_children, child=child_data_model)
 
 class ChoiceUnion(Union):
-    # this is a union in which the option is determined at parse-time
+    # this is a union in which the option is determined at parse-time (forward constraint)
     pass

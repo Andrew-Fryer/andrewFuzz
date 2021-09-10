@@ -1,13 +1,15 @@
 from bitarray import bitarray, util as bitarray_util
 
-from . import *
+from src.__init__ import *
 
-stream = BinaryStream(bitarray('000000001000000000011111'))
-my_data_model = Sequence(children=[
+stream = BinaryStream(bitarray('0000 0000  0'))
+my_data_model = Shell()
+my_data_model.value = Sequence(children=[
     Byte(),
-    Flag(),
-    Blob(num_bits=10),
-    DynamicBlob(get_num_bits=lambda this: 5)
+    PureUnion(potential_children=[
+        Flag(),
+        my_data_model, # recursion inside the grammar!
+    ])
 ])
 results = my_data_model.parse(stream)
 
