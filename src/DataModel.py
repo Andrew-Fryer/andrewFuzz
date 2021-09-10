@@ -1,5 +1,6 @@
 class Parser:
     def parse(self, stream):
+        # Note that the returned DataModel object must be the root of a TREE while self is a graph
         raise NotImplementedError
 
 class AST:
