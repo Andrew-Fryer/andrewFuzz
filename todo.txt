@@ -26,3 +26,6 @@ This could be:
     -> when we change a sub-tree from one constraint, we need to update all other references into that sub-tree
 -The parent class of all Non-terminals has a system that finds a sub-tree from a "path" (list of strings which we index on the obj.__dict__ thing...)
 I'm currently leaning towards the last option.
+
+Seperate initialization from memory allocation (for creating an object in the tree). This way we don't need weird hoisting stuff!
+^actually, we only need to do that for setting the children on a branching non-terminal.

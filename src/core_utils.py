@@ -1,6 +1,7 @@
 from BinaryStream import bitarray
 
 class Shell:
+    # TODO: should this class create objects with a "set_value" method that actually turn an instance of this class into that class?
     def __init__(self):
         self.value = None # will be over-written by the caller
     def parse(self, stream):
