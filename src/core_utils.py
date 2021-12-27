@@ -1,3 +1,5 @@
+from BinaryStream import bitarray
+
 class Shell:
     def __init__(self):
         self.value = None # will be over-written by the caller
