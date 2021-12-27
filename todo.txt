@@ -9,3 +9,20 @@ Hey, let's think about this for a second...
 A grammar does not store data and is an un-restricted, directed graph.
 An AST stores data and is a tree.
 
+
+
+Another thought:
+I think we need to do stuff a certain way:
+-I think that fuzzing should return an object tree
+-I think that all objects in trees should be immutable
+-everything in the tree needs to be clonable
+This way, we can clone the tree and then replace sub-trees (usually leaves) as we please.
+I'll need a mechanism to make replacing subtrees manageable.
+This could be:
+-something complex (like storing the tree structure in another structure as well <- like a dict that maps paths to sub-trees)
+    -> this will inevitably lead to some management overhead and having to manage this structure in places that will be awkward
+-traverse the tree checking with the == operator to detect the node we want to replace
+    -> slow
+    -> when we change a sub-tree from one constraint, we need to update all other references into that sub-tree
+-The parent class of all Non-terminals has a system that finds a sub-tree from a "path" (list of strings which we index on the obj.__dict__ thing...)
+I'm currently leaning towards the last option.
