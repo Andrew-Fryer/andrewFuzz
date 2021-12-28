@@ -2,7 +2,7 @@ from bitarray import bitarray, util as bitarray_util
 
 from src.__init__ import *
 
-stream = BinaryStream(bitarray('0000 0000  0000 0000  1'))
+stream = BinaryStream('0000 0000  0000 0000  1')
 my_data_model = Shell()
 my_data_model.value = Sequence(children=[
     Byte(),
