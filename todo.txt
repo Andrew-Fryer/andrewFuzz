@@ -29,3 +29,18 @@ I'm currently leaning towards the last option.
 
 Seperate initialization from memory allocation (for creating an object in the tree). This way we don't need weird hoisting stuff!
 ^actually, we only need to do that for setting the children on a branching non-terminal.
+
+When I extend this codebase to fuzz systems with multiple packets of communication (state), I can just have a state object that is referenced by the fuzz and parse methods.
+
+A whole seperate problem is determining which responses from the System Under Test are "interesting".
+We can think of this as being a binary deal, where we test the output in some well-defined way.
+(Is the response the same as the response for the un-fuzzed case except for some timestamps and stuff?
+Is the response an error when we broke something? <- that means that the fuzzing system will need to indicate which inputs break the grammar and which don't...)
+Or, we can think of interesting-ness as a real value which can be composed from a metric and/or ML approaches.
+The features should include:
+-it is an error or an acutal response
+-what is the error code/type (the error code might indicate syntactic vs. semantic...)
+-how long did it take to respond? -> AndrewFuzz could re-run interesting test to get more insight on this...
+-features of the input data -> my thinking here is that we expect similar inputs to yield similar outputs
+Then, a clusting algorithm should be able to identify interesting responses!
+Note: in a multi-message system, it would probably make sense to try interesting first messages more than normal first messages...
