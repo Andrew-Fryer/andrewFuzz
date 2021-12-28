@@ -112,8 +112,10 @@ class Sequence(NonTerminal):
             current_progress = next_progress
         for children, remaining_stream in current_progress:
             yield ParsingProgress(Sequence(children=children), remaining_stream)
-    def __init__(self, children=[]):
+    def __init__(self, children=None):
         self.children = children # todo: change children to be a dict so that we can name each field
+    def set_children(self, children):
+        self.children = children
     def __str__(self):
         result = "{\n"
         for child in self.children:

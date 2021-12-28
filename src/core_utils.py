@@ -1,5 +1,6 @@
 from src.BinaryStream import bitarray
 
+@DeprecationWarning
 class Shell:
     # TODO: should this class create objects with a "set_value" method that actually turn an instance of this class into that class?
     def __init__(self):

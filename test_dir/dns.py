@@ -7,8 +7,8 @@ uint16 = Sequence(children=[Byte(), Byte()])
 # this is my make-shift way to implement hoisting
 # TODO: why not define the children dicts first using hoisting and then create the objects?
 #    -> will that work?
-query = Shell()
-domain = Shell()
+query = Sequence()
+domain = Union()
 
 dns = Sequence(children={
     'transactionId': uint16,
@@ -23,7 +23,7 @@ dns = Sequence(children={
     'additional': 'asdf',
 })
 
-query.value = Sequence(children={
+query.set_children(children={
     'name': domain,
     'type': uint16,
     'class': uint16,
@@ -31,7 +31,7 @@ query.value = Sequence(children={
 
 null = '0000 0000'
 c = '0000 1100'
-domain.value = Union(
+domain.set_children(
     Sequence(children={
         'length': Constraint(uint8, lambda this: this.value != c and this.value != null),
         'letters': LengthSet(char, lambda this: this.parent.children['length']), # TODO: replace `lambda ...` with `helper("../length")`
