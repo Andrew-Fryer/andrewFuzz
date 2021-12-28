@@ -1,12 +1,9 @@
 from src.__init__ import *
 
 char = Byte()
-uint8 = None
+uint8 = Byte() # TODO: I think it would better for Uint8 to be a subclass of Byte...
 uint16 = Sequence(children=[Byte(), Byte()])
 
-# this is my make-shift way to implement hoisting
-# TODO: why not define the children dicts first using hoisting and then create the objects?
-#    -> will that work?
 query = Sequence()
 domain = Union()
 
@@ -23,7 +20,7 @@ dns = Sequence(children={
     'additional': 'asdf',
 })
 
-query.set_children(children={
+query.set_children({
     'name': domain,
     'type': uint16,
     'class': uint16,
@@ -31,8 +28,8 @@ query.set_children(children={
 
 null = '0000 0000'
 c = '0000 1100'
-domain.set_children(
-    Sequence(children={
+domain.set_children({
+    Sequence({
         'length': Constraint(uint8, lambda this: this.value != c and this.value != null),
         'letters': LengthSet(char, lambda this: this.parent.children['length']), # TODO: replace `lambda ...` with `helper("../length")`
     }),
@@ -41,6 +38,6 @@ domain.set_children(
         'ref': uint8,
     }),
     Literal(null),
-)
+})
 
 pass

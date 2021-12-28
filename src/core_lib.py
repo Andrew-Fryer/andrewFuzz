@@ -16,6 +16,32 @@ class NonTerminal(DataModel):
     #     self.parent = parent
     pass
 
+class BranchingNonterminal(NonTerminal):
+    def __init__(self, children=None):
+        self.children = children # todo: change children to be a dict so that we can name each field
+    def set_children(self, children):
+        self.children = children
+    def __str__(self):
+        result = "{\n"
+        for child in self.children:
+            result += "\t" + str(child) + ",\n"
+        result += "}"
+        return result
+    def fuzz(self):
+        for i in range(len(self.children)):
+            mutated_children = self.children[:]
+            for mutated_child in self.children[i].fuzz():
+                mutated_children[i] = mutated_child
+                yield Sequence(mutated_children)
+    def serialize(self):
+        result = bitarray()
+        for child in self.children:
+            result += child.serialize() # TODO: I might be able to get better performance by wrapping bitarray and implementing + as just remembering the operands...
+        return result
+
+class Wrapper(NonTerminal):
+    pass
+
 class Terminal(DataModel):
     # def set_parent(self, parent):
     #     assert not self.parent
@@ -59,8 +85,13 @@ class Blob(Terminal):
         data, stream = stream.eat(self.num_bits)
         if data != None:
             yield ParsingProgress(Blob(data, num_bits=self.num_bits), stream)
-    def __init__(self, data=None, num_bits=0):
-        self.num_bits = num_bits
+    def __init__(self, data=None, num_bits=None, num_bytes=None):
+        if num_bits != None:
+            assert(num_bytes == None)
+            self.num_bits = num_bits
+        else:
+            assert(num_bytes != None)
+            self.num_bits = num_bytes * 8
         self.data = data if data != None else bitarray('0' * self.num_bits)
     def __str__(self):
         return self.data.to01()
@@ -97,7 +128,7 @@ class DynamicBlob(Terminal):
     def serialize(self):
         return self.data
 
-class Sequence(NonTerminal):
+class Sequence(BranchingNonterminal):
     # This is analogous to a struct in c
     def parse(self, stream):
         current_progress = [([], stream)]
@@ -112,40 +143,43 @@ class Sequence(NonTerminal):
             current_progress = next_progress
         for children, remaining_stream in current_progress:
             yield ParsingProgress(Sequence(children=children), remaining_stream)
-    def __init__(self, children=None):
-        self.children = children # todo: change children to be a dict so that we can name each field
-    def set_children(self, children):
-        self.children = children
-    def __str__(self):
-        result = "{\n"
-        for child in self.children:
-            result += "\t" + str(child) + ",\n"
-        result += "}"
-        return result
-    def fuzz(self):
-        for i in range(len(self.children)):
-            mutated_children = self.children[:]
-            for mutated_child in self.children[i].fuzz():
-                mutated_children[i] = mutated_child
-                yield Sequence(mutated_children)
-    def serialize(self):
-        result = bitarray()
-        for child in self.children:
-            result += child.serialize()
-        return result
 
-class Set(NonTerminal):
+class Set(BranchingNonterminal):
     # this is analogous to an array in c
     # this is an abstract class that does not know how the length of the set is determined
-    pass
+    def __init__(self, child_prototype, children=None):
+        super().__init__(children)
+        self.child_prototype = child_prototype
+        self.children = None
+    def __parse__():
+        raise NotImplementedError
 
 class LengthSet(Set):
     # this is a set in which the length is known before parse-time
-    pass
+    def __init__(self, child_prototype, length, children=None):
+        pass
 
 class DynamicLengthSet(Set):
     # this is a set in which the length is known only at parse-time
-    pass
+    def __init__(self, child_prototype, length_function, children=None):
+        super().__init__(child_prototype, children)
+        self.lenth_function = length_function
+    def parse(self, stream): # Note that this is very similar to `Sequence.parse`
+        length = self.lenth_function(self)
+        current_progress = [([], stream)]
+        for i in range(length):
+            next_progress = []
+            for parsed_children, remaining_stream in current_progress:
+                results = list(self.child_prototype.parse(remaining_stream))
+                for result in results:
+                    new_child, result_stream = result.get_tuple()
+                    next_progress.append((parsed_children + [new_child], result_stream))
+                    # I would love to use Monads here to do the higher-level stuff nicely :)
+            
+            current_progress = next_progress
+        for children, remaining_stream in current_progress:
+            yield ParsingProgress(Sequence(children=children), remaining_stream)
+
 
 class TerminatedSet(Set):
     # this is a set in which the end of the set is indicated by some condition
@@ -155,7 +189,7 @@ class SymbolTerminatedSet(Set):
     # this is a set in which the end of the set is indicated by some special symbol
     pass
 
-class Union(NonTerminal):
+class Union(BranchingNonterminal):
     # this is analogous to a union in c
     # this is an abstract class that does not know how to determine which option to parse
     def __str__(self):
