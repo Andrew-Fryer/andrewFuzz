@@ -13,11 +13,35 @@ class NonTerminal(DataModel):
     #     self.parent = parent
     pass
 
-class BranchingNonterminal(NonTerminal):
+class BranchingNonTerminal(NonTerminal):
     def __init__(self, children=None):
         self.children = children # todo: change children to be a dict so that we can name each field
     def set_children(self, children):
         self.children = children
+
+class NamedBranchingNonTerminal(BranchingNonTerminal):
+    # `self.children` is a dict
+    def __str__(self):
+        result = "{\n"
+        for child_name in self.children:
+            child = self.children[child_name]
+            result += "\t" + child_name + ": " + str(child) + ",\n"
+        result += "}"
+        return result
+    def fuzz(self):
+        for child_name in self.children:
+            mutated_children = self.children.copy()
+            for mutated_child in self.children[child_name].fuzz():
+                mutated_children[child_name] = mutated_child
+                yield self.__class__(mutated_children) # eww, this will break if the sub-class takes different parameters...
+    def serialize(self):
+        result = bitarray()
+        for child in self.children.values(): # this works because python dicts preserve order
+            result += child.serialize() # TODO: I might be able to get better performance by wrapping bitarray and implementing + as just remembering the operands...
+        return result
+
+class UnNamedBranchingNonTerminal(BranchingNonTerminal):
+    # `self.children` is a list
     def __str__(self):
         result = "{\n"
         for child in self.children:
@@ -36,5 +60,8 @@ class BranchingNonterminal(NonTerminal):
             result += child.serialize() # TODO: I might be able to get better performance by wrapping bitarray and implementing + as just remembering the operands...
         return result
 
-class Wrapper(NonTerminal):
+class NonBranchingNonTerminal(NonTerminal):
+    pass
+
+class Wrapper(NonBranchingNonTerminal):
     pass

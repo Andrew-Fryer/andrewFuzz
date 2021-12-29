@@ -1,7 +1,7 @@
-from src.NonTerminal import BranchingNonterminal
+from src.NonTerminal import UnNamedBranchingNonTerminal
 from src.ParsingProgress import ParsingProgress
 
-class Set(BranchingNonterminal):
+class Set(UnNamedBranchingNonTerminal):
     # this is analogous to an array in c
     # this is an abstract class that does not know how the length of the set is determined
     def __init__(self, child_prototype, children=None):

@@ -1,7 +1,7 @@
-from src.NonTerminal import BranchingNonterminal
+from src.NonTerminal import NonBranchingNonTerminal
 from src.ParsingProgress import ParsingProgress
 
-class Union(BranchingNonterminal):
+class Union(NonBranchingNonTerminal):
     # this is analogous to a union in c
     # this is an abstract class that does not know how to determine which option to parse
     def __str__(self):

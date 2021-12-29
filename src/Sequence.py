@@ -1,7 +1,7 @@
 from src.ParsingProgress import ParsingProgress
-from src.NonTerminal import BranchingNonterminal
+from src.NonTerminal import NamedBranchingNonTerminal
 
-class Sequence(BranchingNonterminal):
+class Sequence(NamedBranchingNonTerminal):
     # This is analogous to a struct in c
     def parse(self, stream):
         current_progress = [([], stream)]
