@@ -45,4 +45,4 @@ The features should include:
 Then, a clusting algorithm should be able to identify interesting responses!
 Note: in a multi-message system, it would probably make sense to try interesting first messages more than normal first messages...
 
-I think I should make a `FuzzingProgress` class that is basically a tuple of (`DataModel`, `Fuzziness`), where `Fuzziness` is an enum that describes what level the fuzz is supposed to test (Correct, SemanticError, or SyntacticError).
+I think I should make a `FuzzingProgress` class that is basically a tuple of (`DataModel`, `Fuzziness`), where `Fuzziness` is an enum that describes what level the fuzz is supposed to test (Correct, SemanticError, SyntacticError, Both, or Unknown).

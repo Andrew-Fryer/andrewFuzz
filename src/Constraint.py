@@ -1,16 +1,7 @@
-from src.BinaryStream import bitarray
+from src.NonTerminal import Wrapper
 from src.ParsingProgress import ParsingProgress
 
-class Literal:
-    def __init__(self, literal_value, num_bits=None):
-        if isinstance(literal_value, str):
-            self._value = bitarray(literal_value)
-        elif isinstance(literal_value, bitarray):
-            self._value = literal_value
-        else:
-            assert False
-
-class Constraint:
+class Constraint(Wrapper):
     def __init__(self, child, constraint_function):
         self.child = child
         self.constraint_fuction = constraint_function

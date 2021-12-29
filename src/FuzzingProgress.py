@@ -1,5 +1,5 @@
 class ParsingProgress:
-    # this class is a named tuple which stores the progress of a parse
+    # this class is a named tuple which stores the progress of a fuzz
     def __init__(self, data_model, stream):
         self.data_model = data_model
         self.stream = stream
