@@ -4,13 +4,13 @@ from src.__init__ import *
 
 stream = BinaryStream('0000 0000  0000 0000  1')
 my_data_model = Sequence()
-my_data_model.set_children([
-    Byte(),
-    PureUnion(potential_children=[
+my_data_model.set_children({
+    'b': Byte(),
+    'u': PureUnion(potential_children=[
         Flag(),
         my_data_model, # recursion inside the grammar!
-    ])
-])
+    ]),
+})
 results = my_data_model.parse(stream)
 results_list = list(results)
 

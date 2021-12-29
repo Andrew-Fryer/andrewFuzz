@@ -23,15 +23,14 @@ class NamedBranchingNonTerminal(BranchingNonTerminal):
     # `self.children` is a dict
     def __str__(self):
         result = "{\n"
-        for child_name in self.children:
-            child = self.children[child_name]
+        for child_name, child in self.children.items():
             result += "\t" + child_name + ": " + str(child) + ",\n"
         result += "}"
         return result
     def fuzz(self):
-        for child_name in self.children:
+        for child_name, child in self.children.items():
             mutated_children = self.children.copy()
-            for mutated_child in self.children[child_name].fuzz():
+            for mutated_child in child.fuzz():
                 mutated_children[child_name] = mutated_child
                 yield self.__class__(mutated_children) # eww, this will break if the sub-class takes different parameters...
     def serialize(self):

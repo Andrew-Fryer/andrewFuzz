@@ -1,12 +1,12 @@
 from src.__init__ import *
 
 stream = BinaryStream('000000001000000000011111')
-my_data_model = Sequence(children=[
-    Byte(),
-    Flag(),
-    Blob(num_bits=10),
-    DynamicBlob(get_num_bits=lambda this: 5)
-])
+my_data_model = Sequence({
+    'headerNum': Byte(),
+    'isTrue': Flag(),
+    'data': Blob(num_bits=10),
+    'metaData': DynamicBlob(get_num_bits=lambda this: 5),
+})
 results = my_data_model.parse(stream)
 
 data_model, stream = list(results)[0].get_tuple()
