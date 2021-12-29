@@ -1,4 +1,5 @@
 from src.NonTerminal import BranchingNonterminal
+from src.ParsingProgress import ParsingProgress
 
 class Union(BranchingNonterminal):
     # this is analogous to a union in c

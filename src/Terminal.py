@@ -46,13 +46,17 @@ class Blob(Terminal):
         if data != None:
             yield ParsingProgress(Blob(data, num_bits=self.num_bits), stream)
     def __init__(self, data=None, num_bits=None, num_bytes=None):
-        if num_bits != None:
-            assert(num_bytes == None)
-            self.num_bits = num_bits
+        if data != None:
+            self.num_bits = len(data)
+            self.data = data
         else:
-            assert(num_bytes != None)
-            self.num_bits = num_bytes * 8
-        self.data = data if data != None else bitarray('0' * self.num_bits)
+            if num_bits != None:
+                assert(num_bytes == None)
+                self.num_bits = num_bits
+            else:
+                assert(num_bytes != None)
+                self.num_bits = num_bytes * 8
+            self.data = bitarray('0' * self.num_bits)
     def __str__(self):
         return self.data.to01()
     def get_value(self):
