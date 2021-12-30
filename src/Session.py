@@ -13,3 +13,5 @@ class Session:
         self.set(name, value)
     def get(self, name):
         return self._data[name] # be careful not to mutate data contain in this return value!
+    def reset(self, d):
+        self._data = d
