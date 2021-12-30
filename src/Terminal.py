@@ -68,6 +68,12 @@ class Blob(Terminal):
     def serialize(self):
         return self.data
 
+class String(Blob):
+    def __init__(self, string):
+        data = ''.join([format(b, 'b').zfill(8) for b in [ord(l) for l in string] + [0]])
+        super().__init__(data)
+    # TODO: override get_value, __str__, and fuzz
+
 class DynamicBlob(Terminal):
     # used when length is only known at parse-time
     # Warning! param get_num_bits must be ideponent

@@ -1,5 +1,6 @@
 from src.BinaryStream import BinaryStream
 from src.ParsingProgress import *
+from src.Session import Session
 from src.DataModel import DataModel
 from src.NonTerminal import *
 from src.Sequence import *

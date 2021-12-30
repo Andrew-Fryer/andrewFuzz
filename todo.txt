@@ -44,6 +44,7 @@ Is there any legitimate reason that code in the grammar should mutate the state?
     -> I think it is reasonable to write glue code that pulls values out of the tree and stuffs them into the state for the next stage
 Anything dependent on the fuzz is tied to that fuzz :|
     -> this means one global object won't work if the grammar can mutate it
+For now, I'm deciding to disallow the grammar from mutating state.
 
 A whole seperate problem is determining which responses from the System Under Test are "interesting".
 We can think of this as being a binary deal, where we test the output in some well-defined way.
@@ -53,6 +54,7 @@ Or, we can think of interesting-ness as a real value which can be composed from 
 The features should include:
 -it is an error or an acutal response
 -what is the error code/type (the error code might indicate syntactic vs. semantic...)
+-how long is the response (will hopefully find heartbleed)
 -how long did it take to respond? -> AndrewFuzz could re-run interesting test to get more insight on this...
 -features of the input data -> my thinking here is that we expect similar inputs to yield similar outputs
 Then, a clusting algorithm should be able to identify interesting responses!
