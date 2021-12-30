@@ -3,6 +3,7 @@
 # rename `fuzz` to `get_mutations`?
 # TODO: make contexts work so that 'dynamic' data models are useful
 
+Note: I'm assuming that performance is a secondary issue because the SUT will consume the bulk of all resources anyway...
 
 
 Hey, let's think about this for a second...
@@ -31,6 +32,18 @@ Seperate initialization from memory allocation (for creating an object in the tr
 ^actually, we only need to do that for setting the children on a branching non-terminal.
 
 When I extend this codebase to fuzz systems with multiple packets of communication (state), I can just have a state object that is referenced by the fuzz and parse methods.
+I have a decsion to make here...
+I can pipe a state object through all of the parsing and fuzzing.
+It may be possible to do this smoothly using monads...
+Or,
+I can just have a reference to a state object in the grammar (closure style) and then set up the state before parsing or fuzzing a stage of a protocol...
+
+Is there any legitimate reason that code in the grammar should mutate the state?
+-within the same request we should be using constraints!
+-remember a mutated value (handle, challenge, etc) so that it matches across requests
+    -> I think it is reasonable to write glue code that pulls values out of the tree and stuffs them into the state for the next stage
+Anything dependent on the fuzz is tied to that fuzz :|
+    -> this means one global object won't work if the grammar can mutate it
 
 A whole seperate problem is determining which responses from the System Under Test are "interesting".
 We can think of this as being a binary deal, where we test the output in some well-defined way.
@@ -46,3 +59,19 @@ Then, a clusting algorithm should be able to identify interesting responses!
 Note: in a multi-message system, it would probably make sense to try interesting first messages more than normal first messages...
 
 I think I should make a `FuzzingProgress` class that is basically a tuple of (`DataModel`, `Fuzziness`), where `Fuzziness` is an enum that describes what level the fuzz is supposed to test (Correct, SemanticError, SyntacticError, Both, or Unknown).
+^Or, I could make the DataModel class have a `self.fuzziness` property which is set by the constructor/set_children method.
+^I think that the tree of fuzziness values could be a really good feature for clustering the error messages received...
+    This feature vector could be as simple as: (#Correct, #Semantic, #Syntactic, #Both, #Unknown) where each count is of the nodes in the tree that both have that Fuzziness and are different from the un-fuzzed value.
+
+
+I think it might be a good idea to monadify the ParsingProgress and FuzzingProgress classes.
+The classes now store the list/generator of (DataModel, remaining_stream/Fuzziness) tuples.
+The classes have a higher-order function!
+`map` (or something) 
+Wait, I think this is just the list monad from Haskell...
+
+^The parsing mechanism needs to propagate a generator of (DataModel, Stream, readonly_state)
+parse :: Stream -> State -> [(DataModel, Stream)]
+We can think of the parse method as somehting that eats input. On the side, it produces a DataModel instance.
+The flatten function is basically `itertools.chain` for Union and `itertools.product` for Sequence, but then we have to combine the list of children data models into a Sequence or Set or whatever...
+I think it is actually cleaner just to keep that code in the parse methods of the NonTerminal classes (at least for now).
