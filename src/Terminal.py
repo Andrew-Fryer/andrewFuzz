@@ -64,8 +64,8 @@ class Blob(Terminal):
     def fuzz(self):
         yield Blob(bitarray('0' * self.num_bits))
         yield Blob(bitarray('1' * self.num_bits))
-        yield Blob(bitarray('0' * (self.num_bits - 1) + ['1']))
-        yield Blob(bitarray('1' * (self.num_bits - 1) + ['0']))
+        yield Blob(bitarray('0' * (self.num_bits - 1) + '1'))
+        yield Blob(bitarray('1' * (self.num_bits - 1) + '0'))
         yield Blob(bitarray('')) # this breaks the structure
     def serialize(self):
         return self.data
