@@ -77,3 +77,8 @@ parse :: Stream -> State -> [(DataModel, Stream)]
 We can think of the parse method as somehting that eats input. On the side, it produces a DataModel instance.
 The flatten function is basically `itertools.chain` for Union and `itertools.product` for Sequence, but then we have to combine the list of children data models into a Sequence or Set or whatever...
 I think it is actually cleaner just to keep that code in the parse methods of the NonTerminal classes (at least for now).
+
+Helpful snippets:
+`bitarray(format(ord('a'), '08b')).tobytes().decode('ascii')`
+`python -m unittest test_dir.dns`
+

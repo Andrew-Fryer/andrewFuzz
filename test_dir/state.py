@@ -92,7 +92,66 @@ response_check_functions = [
     get_data_check,
     sign_out_check,
 ]
-def interact_function():
-    # TODO: write a dummy server and talk to it here
-    pass
-fuzzer = Fuzzer(session_objects, send_grammars, response_grammars, response_check_functions, interact_function)
+
+from bitarray.util import ba2int
+from secrets import randbits
+class SUT:
+    def __init__(self):
+        self.memory = { 'auth': base_session_data.copy(), 'tokens': [], 'handles': [], }
+    def interact_function(self, input_data):
+        try:
+            endpoint = ba2int(input_data[:8])
+            input_data = input_data[8:]
+            if endpoint == 0: # sign in
+                user_email = ''
+                while True:
+                    char_data = input_data[:8]
+                    if char_data != bitarray('0' * 8):
+                        char = char_data.tobytes().decode('ascii')
+                        user_email += char
+                    else:
+                        break
+                password = ''
+                while True:
+                    char_data = input_data[:8]
+                    if char_data != bitarray('0' * 8):
+                        char = char_data.tobytes().decode('ascii')
+                        password += char
+                    else:
+                        break
+                if user_email not in self.memory['auth'] or self.memory['auth'][user_email] != password:
+                    return bitarray('')
+                token = randbits(256)
+                self.memory['tokens'].append(token)
+                return bitarray(format(token, '0256b'))
+            elif endpoint == 1: # get handle
+                token = ba2int(input_data[:256])
+                input_data = input_data[256:]
+                if token not in self.memory['tokens']:
+                    return bitarray('')
+                file_path = ''
+                while True:
+                    char_data = input_data[:8]
+                    if char_data != bitarray('0' * 8):
+                        char = char_data.tobytes().decode('ascii')
+                        file_path += char
+                    else:
+                        break
+                handle = randbits(256)
+                self.memory['handles'].append((handle, file_path))
+                return bitarray(format(handle, '0256b'))
+            elif endpoint == 2: # get data
+                handle = ba2int(input_data[:256])
+                input_data = input_data[256:]
+                if handle not in [x for x, _ in self.memory['tokens']]:
+                    return bitarray('')
+                return bitarray(''.join([format(ord(x), '08b') for x in 'This is the data!']))
+            elif endpoint == 3: # sign out
+                return bitarray('0' * 8)
+            else:
+                return bitarray('') # error
+        except:
+            return bitarray('') # error
+sut = SUT()
+
+fuzzer = Fuzzer(session_objects, send_grammars, response_grammars, response_check_functions, sut.interact_function)

@@ -19,13 +19,12 @@ class Fuzzer:
         for fuzzed_data_model in self.send_grammars[i].fuzz():
             fuzzed_data = fuzzed_data_model.serialize()
             fuzziness = fuzzed_data_model.fuzziness
-            response_data = self.interact_function(fuzzed_data)
+            response_data = self.interact_function(fuzzed_data) # nonono, the SUT has state, so we need to reset it and hold it's hand through each stage...
             parsing_results = self.response_grammars[i].parse(response_data)
-            should_continue, next_session = self.response_check_functions[i](parsing_results, fuzziness)
-            # TODO: I think I should allow branching on multiple parses of the response!!!
             # parsing_results = [x for x in parsing_results if len(x.stream) == 0] # I think this should actually be inforced by the grammars...
-            if should_continue:
-                self.session_objects[i + 1].reset(next_session)
-                self._do_fuzzing(i + 1)
+            for should_continue, next_session in self.response_check_functions[i](parsing_results, fuzziness):
+                if should_continue:
+                    self.session_objects[i + 1].reset(next_session)
+                    self._do_fuzzing(i + 1)
     def do_fuzzing(self):
         self._do_fuzzing(0)
