@@ -78,29 +78,26 @@ class String(Blob):
 
 class Number(Blob):
     def __init__(self, value, num_bytes):
-        value_bytes = [ord(l) for l in value]
-        padding_len = num_bytes - len(value_bytes)
-        assert(padding_len >= 0)
-        padding = [0] * padding_len
-        data = ''.join([format(b, 'b').zfill(8) for b in padding + value_bytes])
+        value_bytes = value.to_bytes(num_bytes, 'big')
+        data = ''.join([format(b, 'b').zfill(8) for b in value_bytes])
         super().__init__(data)
     # TODO: override get_value, __str__, and fuzz
 
 class Uint8(Number):
     def __init__(self, value):
-        super().__init__(value, 8 / 8)
+        super().__init__(value, 1)
 
 class Uint16(Number):
     def __init__(self, value):
-        super().__init__(value, 16 / 8)
+        super().__init__(value, 2)
 
 class Uint32(Number):
     def __init__(self, value):
-        super().__init__(value, 32 / 8)
+        super().__init__(value, 4)
 
 class Uint64(Number):
     def __init__(self, value):
-        super().__init__(value, 64 / 8)
+        super().__init__(value, 8)
 
 class DynamicBlob(Terminal):
     # used when length is only known at parse-time
