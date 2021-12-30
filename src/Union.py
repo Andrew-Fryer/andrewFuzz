@@ -17,21 +17,20 @@ class Union(NonBranchingNonTerminal):
 class PureUnion(Union):
     # this is a union in which all options are tried (even if a previous option's parse is successful)
     def parse(self, stream):
-        parses = []
-        for child in self.potential_children:
-            for parse in child.parse(stream):
-                child_data_model, child_stream = parse.get_tuple()
+        for potential_child in self.potential_children:
+            for parsed_child, remaining_stream in potential_child.parse(stream):
                 yield ParsingProgress(
-                    PureUnion(potential_children=self.potential_children, child=child_data_model),
-                    child_stream,
+                    PureUnion(potential_children=self.potential_children, child=parsed_child),
+                    remaining_stream,
                 )
     def __init__(self, potential_children, child=None):
         assert len(potential_children) > 0
         self.potential_children = potential_children
         self.child = child if child != None else potential_children[0]
     def fuzz(self):
-        for child_data_model in self.child.fuzz():
-            yield PureUnion(potential_children=self.potential_children, child=child_data_model)
+        for child in [self.child] + self.potential_children:
+            for child_data_model in child.fuzz():
+                yield PureUnion(potential_children=self.potential_children, child=child_data_model)
 
 class ChoiceUnion(Union):
     # this is a union in which the option is determined at parse-time (forward constraint)
