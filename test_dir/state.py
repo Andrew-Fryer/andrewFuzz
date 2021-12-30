@@ -10,6 +10,7 @@ base_session_data = {
 session_objects[0].reset(base_session_data)
 
 sign_in_grammar = Sequence({
+    'endpoint': Uint8(0),
     "email": String(session_state.get('user_email')),
     "password": String(session_state.get('password')),
 })
@@ -29,6 +30,7 @@ def sign_in_check(parsing_results, fuzziness):
     return True, session_data
 
 get_handle_grammar = Sequence({
+    'endpoint': Uint8(1),
     "token": Blob(session_state.get('token')),
     "file_path": String('/mnt/a/b/c/file')
 })
@@ -48,6 +50,7 @@ def get_handle_check(parsing_results, fuzziness):
     return True, session_data
 
 get_data_grammar = Sequence({
+    'endpoint': Uint8(2),
     'handle': Blob(session_state('handle')), # hopefully this gets mutated to point somewhere that doesn't make sense or at /etc/shadow :)
 })
 
@@ -60,6 +63,7 @@ def get_data_check(parsing_results, fuzziness):
     return True, base_session_data
 
 sign_out_grammar = Sequence({
+    'endpoint': Uint8(3),
     "email": String(session_state.get('user_email'))
 })
 
