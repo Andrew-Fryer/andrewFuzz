@@ -22,6 +22,7 @@ class Fuzzer:
             response_data = self.interact_function(fuzzed_data)
             parsing_results = self.response_grammars[i].parse(response_data)
             should_continue, next_session = self.response_check_functions[i](parsing_results, fuzziness)
+            # TODO: I think I should allow branching on multiple parses of the response!!!
             # parsing_results = [x for x in parsing_results if len(x.stream) == 0] # I think this should actually be inforced by the grammars...
             if should_continue:
                 self.session_objects[i + 1].reset(next_session)
