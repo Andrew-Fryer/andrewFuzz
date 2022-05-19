@@ -1,5 +1,6 @@
 from src.core.BinaryStream import bitarray
 from src.lib.Terminal import Terminal
+from src.core.ParsingProgress import ParsingProgress
 
 class Literal(Terminal):
     def __init__(self, literal_value, num_bits=None):

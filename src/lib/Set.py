@@ -16,6 +16,7 @@ class LengthSet(Set):
     # this is a set in which the length is known before parse-time
     def __init__(self, child_prototype, length, children=None):
         pass
+        # todo
 
 class DynamicLengthSet(Set):
     # this is a set in which the length is known only at parse-time
@@ -23,7 +24,7 @@ class DynamicLengthSet(Set):
         super().__init__(child_prototype, children)
         self.length_function = length_function
     def parse(self, stream, ctx=None): # Note that this is very similar to `Sequence.parse`
-        length = self.length_function(ctx)
+        length = self.length_function(Ctx(p=ctx))
         current_progress = [([], stream)]
         for i in range(length):
             next_progress = []
@@ -59,8 +60,10 @@ class TerminatedSet(Set):
         terminated = False
         while not terminated:
             results = list(self.child_prototype.parse(remaining_stream, cctx))
-            assert len(results) == 1 # todo
-            child, remaining_stream = resuts[0].get_tuple()
+            # assert len(results) == 1 # todo
+            if len(results) == 0:
+                return
+            child, remaining_stream = results[0].get_tuple()
             children.append(child)
             terminated = self.terminate_function(child)
         yield TerminatedSet(self.child_prototype, self.terminate_function, children)

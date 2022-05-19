@@ -47,5 +47,6 @@ for pcap_element in pcap_elements:
     pass
   else:
     num_failed += 1
+    break
 
 print("parsed:", num_parsed, "skipped:", num_skipped, "failed:", num_failed)

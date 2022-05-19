@@ -3,6 +3,11 @@ from src.core.DataModel import DataModel
 from src.core.BinaryStream import bitarray
 
 class NonTerminal(DataModel):
+    def set_parent(self, parent):
+        # assert not self.parent
+        self.parent = parent
+
+class BranchingNonTerminal(NonTerminal):
     def __init__(self, children=None):
         if children != None:
             self.link_children(children)
@@ -18,17 +23,12 @@ class NonTerminal(DataModel):
             children = children.values()
         for child in children:
             child.set_parent(self)
-    def set_parent(self, parent):
-        # assert not self.parent
-        self.parent = parent\
 
-class BranchingNonTerminal(NonTerminal):
+class NamedBranchingNonTerminal(BranchingNonTerminal):
     def __init__(self, children: dict={}):
         super().__init__(children)
     def set_children(self, children: dict):
         super().link_children(children)
-
-class NamedBranchingNonTerminal(BranchingNonTerminal):
     # `self.children` is a dict
     def __str__(self):
         result = "{\n"
@@ -50,6 +50,10 @@ class NamedBranchingNonTerminal(BranchingNonTerminal):
 
 class UnNamedBranchingNonTerminal(BranchingNonTerminal):
     # `self.children` is a list
+    def __init__(self, children: list=[]):
+        super().__init__(children)
+    def set_children(self, children: list):
+        super().link_children(children)
     def __str__(self):
         result = "{\n"
         for child in self.children:
@@ -69,19 +73,25 @@ class UnNamedBranchingNonTerminal(BranchingNonTerminal):
         return result
 
 class NonBranchingNonTerminal(NonTerminal):
-    def __init__(self, children: list=[]):
-        super().__init__(children)
-    def set_children(self, children: list):
-        super().link_children(children)
+    def __init__(self, child=None):
+        self.child = None
+        if child != None:
+            self.link_child(child)
+    def link_child(self, child):
+        self.child = child
+        '''
+        Note that parents only make sense when a DataModel is a tree, which is garanteed when it is used as an AST, when it is the result of a parse, and when it is the result of a fuzz of a parse.
+        A DataModel may only be a DAG (or even a graph with cycles).
+        For now, we go on assigning parents in the DAG even though they aren't useful.
+        Just be careful not to think the parent field in a DAG is the only parent.
+        '''
+        child.set_parent(self)
 
 class Wrapper(NonBranchingNonTerminal):
-    def __init__(self, child):
-        super().__init__()
-        self.child = child
     def __str__(self):
         return str(self.child)
-    def parse(self, stream, ctx=None):
-        for parsing_progress in self.child.parse(stream, ctx):
+    def parse(self, stream, ctx_children=None):
+        for parsing_progress in self.child.parse(stream, ctx_children):
             parsed_child, remaining_stream = parsing_progress.get_tuple()
             yield ParsingProgress(self.__class__(parsed_child), remaining_stream)
     def fuzz(self):

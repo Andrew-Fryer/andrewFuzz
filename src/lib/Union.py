@@ -5,6 +5,12 @@ from src.core.Ctx import Ctx
 class Union(NonBranchingNonTerminal):
     # this is analogous to a union in c
     # this is an abstract class that does not know how to determine which option to parse
+    def set_potential_children(self, potential_children):
+        self.potential_children = potential_children
+        assert len(potential_children) > 0
+        self.potential_children = potential_children
+        if self.child == None:
+            self.child = potential_children[0]
     def __str__(self):
         # TODO: allow child to have multiple lines
         result = "(\n"
@@ -26,10 +32,10 @@ class PureUnion(Union):
                     PureUnion(potential_children=self.potential_children, child=parsed_child),
                     remaining_stream,
                 )
-    def __init__(self, potential_children, child=None):
-        assert len(potential_children) > 0
-        self.potential_children = potential_children
-        self.child = child if child != None else potential_children[0]
+    def __init__(self, potential_children=None, child=None):
+        super().__init__(child)
+        if potential_children != None:
+            self.set_potential_children(potential_children)
     def fuzz(self):
         for child in [self.child]: # + self.potential_children: # this causes infinite recursion for recursive grammars :|. Could I cap it somehow???
             for child_data_model in child.fuzz():

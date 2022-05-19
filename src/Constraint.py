@@ -6,13 +6,14 @@ class Constraint(Wrapper):
         super().__init__(child)
         self.constraint_function = constraint_function
     def parse(self, stream, ctx=None):
-        for parsed_child, remaining_stream in self.child.parse(stream):
+        for progress_obj in self.child.parse(stream):
+            parsed_child, remaining_stream = progress_obj.get_tuple()
             if self.constraint_function(parsed_child): # pass in ctx too?
                 yield ParsingProgress(Constraint(parsed_child, self.constraint_function), remaining_stream)
     def __str__(self):
         return "<Constraint " + str(self.child) + " >"
     def fuzz(self):
-        return self.child.fuzz() # TODO: subclass Constraint to allow us to fuzz diferent constraints
+        return self.child.fuzz() # TODO: subclass Constraint to allow us to fuzz different constraints
 
 # class notEqualsConstraint(Constraint):
 #     def __init__(self, child, )

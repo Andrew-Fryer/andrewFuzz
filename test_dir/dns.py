@@ -1,7 +1,7 @@
 from src.__init__ import *
 
 query = Sequence()
-resource_record = Union()
+resource_record = PureUnion()
 
 dns = Sequence(children={
     'transactionId': Uint16(),
@@ -26,7 +26,7 @@ query.set_children({
 })
 
 address = Sequence(children=[Byte(), Byte(), Byte(), Byte()])
-resource_record.set_children([
+resource_record.set_potential_children([
     Sequence(children={
         'name': domain,
         'type': Uint16(),
@@ -38,22 +38,22 @@ resource_record.set_children([
     # todo
 ])
 
-label = Union()
-domain.set_details(label, lambda this: this.children['inline'] == None)
+label = PureUnion()
+domain.set_details(label, lambda this: isinstance(this.child, Sequence) and hasattr(this.child.children, 'letters') == None)
 
-null = '0000 0000'
-c = '0000 1100'
-label.set_children({
-    'inline': Sequence({
-        'length': Constraint(Uint8(), lambda this: this.value != c and this.value != null),
-        'letters': LengthSet(Char(), lambda this: this.parent.children['length']), # TODO: replace `lambda ...` with `helper("../length")`
+null = bitarray('0000 0000')
+c = bitarray('0000 1100')
+label.set_potential_children([
+    Sequence({
+        'length': Constraint(Uint8(), lambda this: this.data != c and this.data != null),
+        'letters': DynamicLengthSet(Char(), lambda this: this.parent.children['length'].child.get_value()), # TODO: replace `lambda ...` with `helper("../length")`
     }),
-    'pointer': Sequence(children={
+    Sequence(children={
         'marker': Literal(c + null), # 0xc0
         'ref': Uint8(),
     }),
-    'null': Literal(null),
-})
+    Literal(null),
+])
 
 pass
 
