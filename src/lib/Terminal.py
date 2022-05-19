@@ -12,6 +12,8 @@ class Byte(Terminal):
         data, stream = stream.eat(8)
         if data != None:
             yield ParsingProgress(Byte(data), stream)
+        else:
+            print('out of data')
     def __init__(self, data=bitarray('00000000')):
         self.data = data
     def __str__(self):
