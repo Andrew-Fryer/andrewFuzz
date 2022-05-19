@@ -10,10 +10,11 @@ dns = Sequence(children={
     'numAnswer': Uint16(),
     'numAuthority': Uint16(),
     'numAdditional': Uint16(),
-    'question': DynamicLengthSet(query, lambda this: this.parent.children['numQuestion']),
-    'answer': DynamicLengthSet(resource_record, lambda this: this.parent.children['numAnswer']),
-    'authority': DynamicLengthSet(resource_record, lambda this: this.parent.children['numAuthority']),
-    'additional': DynamicLengthSet(resource_record, lambda this: this.parent.children['numAdditional']),
+    'question': DynamicLengthSet(query, lambda this: this.parent.children['numQuestion'].get_value()),
+    'answer': DynamicLengthSet(resource_record, lambda this: this.parent.children['numAnswer'].get_value()),
+    'authority': DynamicLengthSet(resource_record, lambda this: this.parent.children['numAuthority'].get_value()),
+    'additional': DynamicLengthSet(resource_record, lambda this: this.parent.children['numAdditional'].get_value()),
+    'end': Button(),
 })
 
 domain = TerminatedSet()

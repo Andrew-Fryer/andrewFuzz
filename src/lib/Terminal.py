@@ -3,10 +3,9 @@ from src.core.DataModel import DataModel
 from src.core.ParsingProgress import ParsingProgress
 
 class Terminal(DataModel):
-    # def set_parent(self, parent):
-    #     assert not self.parent
-    #     self.parent = parent
-    pass
+    def set_parent(self, parent):
+        # assert not self.parent
+        self.parent = parent
 
 class Byte(Terminal):
     def parse(self, stream):
@@ -52,7 +51,7 @@ class Blob(Terminal):
     def __init__(self, data=None, num_bits=None, num_bytes=None):
         if data != None:
             self.num_bits = len(data)
-            self.data = data
+            self.data = data if isinstance(data, bitarray) else bitarray(data)
         else:
             if num_bits != None:
                 assert(num_bytes == None)
@@ -85,7 +84,11 @@ class Number(Blob):
         value_bytes = value.to_bytes(num_bytes, 'big')
         data = ''.join([format(b, 'b').zfill(8) for b in value_bytes])
         super().__init__(data)
-    # TODO: override get_value, __str__, and fuzz
+    def get_value(self):
+        return bitarray_util.ba2int(self.data, signed=False)
+    def __str__(self):
+        return str(bitarray_util.ba2int(self.data, signed=False))
+    # TODO: override fuzz
 
 class Uint8(Number):
     def __init__(self, value: int=0):
@@ -126,3 +129,18 @@ class DynamicBlob(Terminal):
         yield Blob(bitarray('')) # this breaks the structure
     def serialize(self):
         return self.data
+
+class Button(Terminal):
+    def parse(self, stream):
+        if len(stream) == 0:
+            yield ParsingProgress(self, stream)
+    def __init__(self):
+        pass
+    def __str__(self):
+        return '()'
+    def fuzz(self):
+        yield Byte(bitarray(''))
+        yield Byte(bitarray('0'))
+        yield Byte(bitarray('1'))
+    def serialize(self):
+        return bitarray()

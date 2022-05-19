@@ -3,22 +3,30 @@ from src.core.DataModel import DataModel
 from src.core.BinaryStream import bitarray
 
 class NonTerminal(DataModel):
-    # def __init__(self, children=[], allow_recursion=False):
-    #     self._allow_recursion = allow_recursion # used to allow recursion in a DataModel when used as a grammar, and not when used as an AST
-    #     for child in children:
-    #         child.set_parent(self)
-    # def set_parent(self, parent):
-    #     if self._allow_recursion:
-    #         self.parent = (self.parent or []).append(parent)
-    #     assert not self.parent
-    #     self.parent = parent
-    pass
+    def __init__(self, children=None):
+        if children != None:
+            self.link_children(children)
+    def link_children(self, children):
+        self.children = children
+        '''
+        Note that parents only make sense when a DataModel is a tree, which is garanteed when it is used as an AST, when it is the result of a parse, and when it is the result of a fuzz of a parse.
+        A DataModel may only be a DAG (or even a graph with cycles).
+        For now, we go on assigning parents in the DAG even though they aren't useful.
+        Just be careful not to think the parent field in a DAG is the only parent.
+        '''
+        if isinstance(children, dict):
+            children = children.values()
+        for child in children:
+            child.set_parent(self)
+    def set_parent(self, parent):
+        # assert not self.parent
+        self.parent = parent\
 
 class BranchingNonTerminal(NonTerminal):
-    def __init__(self, children: dict=None):
-        self.children = children
+    def __init__(self, children: dict={}):
+        super().__init__(children)
     def set_children(self, children: dict):
-        self.children = children
+        super().link_children(children)
 
 class NamedBranchingNonTerminal(BranchingNonTerminal):
     # `self.children` is a dict
@@ -61,10 +69,10 @@ class UnNamedBranchingNonTerminal(BranchingNonTerminal):
         return result
 
 class NonBranchingNonTerminal(NonTerminal):
-    def __init__(self, children: list=None):
-        self.children = children
+    def __init__(self, children: list=[]):
+        super().__init__(children)
     def set_children(self, children: list):
-        self.children = children
+        super().link_children(children)
 
 class Wrapper(NonBranchingNonTerminal):
     def __init__(self, child):
