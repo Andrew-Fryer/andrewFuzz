@@ -24,6 +24,10 @@ class Byte(Terminal):
     def serialize(self):
         return self.data
 
+class Char(Byte):
+    def __str__(self):
+        return self.data.tobytes()
+
 class Flag(Terminal):
     def parse(self, stream):
         data, stream = stream.eat(1)
