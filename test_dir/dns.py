@@ -56,8 +56,7 @@ label.set_children({
 
 pass
 
-my_data_model = dns
-print(my_data_model.serialize())
+# my_data_model = dns
 
 # stream = ???
 # results = my_data_model.parse(stream)
