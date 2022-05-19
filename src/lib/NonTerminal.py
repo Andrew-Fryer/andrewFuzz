@@ -1,6 +1,6 @@
-from src.ParsingProgress import ParsingProgress
-from .DataModel import DataModel
-from src.BinaryStream import bitarray
+from src.core.ParsingProgress import ParsingProgress
+from src.core.DataModel import DataModel
+from src.core.BinaryStream import bitarray
 
 class NonTerminal(DataModel):
     # def __init__(self, children=[], allow_recursion=False):
@@ -15,9 +15,9 @@ class NonTerminal(DataModel):
     pass
 
 class BranchingNonTerminal(NonTerminal):
-    def __init__(self, children=None):
-        self.children = children # todo: change children to be a dict so that we can name each field
-    def set_children(self, children):
+    def __init__(self, children: dict=None):
+        self.children = children
+    def set_children(self, children: dict):
         self.children = children
 
 class NamedBranchingNonTerminal(BranchingNonTerminal):
@@ -61,7 +61,10 @@ class UnNamedBranchingNonTerminal(BranchingNonTerminal):
         return result
 
 class NonBranchingNonTerminal(NonTerminal):
-    pass
+    def __init__(self, children: list=None):
+        self.children = children
+    def set_children(self, children: list):
+        self.children = children
 
 class Wrapper(NonBranchingNonTerminal):
     def __init__(self, child):

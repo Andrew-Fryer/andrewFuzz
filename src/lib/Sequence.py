@@ -1,5 +1,5 @@
-from src.ParsingProgress import ParsingProgress
-from src.NonTerminal import NamedBranchingNonTerminal
+from src.core.ParsingProgress import ParsingProgress
+from src.lib.NonTerminal import NamedBranchingNonTerminal
 
 class Sequence(NamedBranchingNonTerminal):
     # This is analogous to a struct in c

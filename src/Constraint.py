@@ -1,5 +1,5 @@
-from src.NonTerminal import Wrapper
-from src.ParsingProgress import ParsingProgress
+from src.lib.NonTerminal import Wrapper
+from src.core.ParsingProgress import ParsingProgress
 
 class Constraint(Wrapper):
     def __init__(self, child, constraint_function):

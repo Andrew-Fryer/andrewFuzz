@@ -1,6 +1,6 @@
-from src.BinaryStream import bitarray, bitarray_util
-from src.DataModel import DataModel
-from src.ParsingProgress import ParsingProgress
+from src.core.BinaryStream import bitarray, bitarray_util
+from src.core.DataModel import DataModel
+from src.core.ParsingProgress import ParsingProgress
 
 class Terminal(DataModel):
     # def set_parent(self, parent):

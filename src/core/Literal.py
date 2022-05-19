@@ -1,4 +1,4 @@
-from src.BinaryStream import bitarray
+from src.core.BinaryStream import bitarray
 
 class Literal:
     def __init__(self, literal_value, num_bits=None):
