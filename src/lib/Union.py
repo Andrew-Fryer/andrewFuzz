@@ -1,5 +1,6 @@
 from src.lib.NonTerminal import NonBranchingNonTerminal
 from src.core.ParsingProgress import ParsingProgress
+from src.core.Ctx import Ctx
 
 class Union(NonBranchingNonTerminal):
     # this is analogous to a union in c
@@ -16,9 +17,10 @@ class Union(NonBranchingNonTerminal):
 
 class PureUnion(Union):
     # this is a union in which all options are tried (even if a previous option's parse is successful)
-    def parse(self, stream):
+    def parse(self, stream, ctx=None):
+        cctx = Ctx(p=ctx)
         for potential_child in self.potential_children:
-            for progress_obj in potential_child.parse(stream):
+            for progress_obj in potential_child.parse(stream, cctx):
                 parsed_child, remaining_stream = progress_obj.get_tuple()
                 yield ParsingProgress(
                     PureUnion(potential_children=self.potential_children, child=parsed_child),

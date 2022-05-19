@@ -1,5 +1,5 @@
 class Parser:
-    def parse(self, stream):
+    def parse(self, stream, ctx=None):
         # Note that the returned DataModel object must be the root of a TREE while self is allowed to be a graph (allows for recursive grammars)
         raise NotImplementedError
 

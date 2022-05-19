@@ -8,7 +8,7 @@ class Terminal(DataModel):
         self.parent = parent
 
 class Byte(Terminal):
-    def parse(self, stream):
+    def parse(self, stream, ctx=None):
         data, stream = stream.eat(8)
         if data != None:
             yield ParsingProgress(Byte(data), stream)
@@ -30,7 +30,7 @@ class Char(Byte):
         return self.data.tobytes()
 
 class Flag(Terminal):
-    def parse(self, stream):
+    def parse(self, stream, ctx=None):
         data, stream = stream.eat(1)
         if data != None:
             yield ParsingProgress(Flag(data), stream)
@@ -46,7 +46,7 @@ class Flag(Terminal):
 
 class Blob(Terminal):
     # used when length is known at before parse-time
-    def parse(self, stream):
+    def parse(self, stream, ctx=None):
         data, stream = stream.eat(self.num_bits)
         if data != None:
             yield ParsingProgress(Blob(data, num_bits=self.num_bits), stream)
@@ -112,7 +112,7 @@ class DynamicBlob(Terminal):
     # used when length is only known at parse-time
     # Warning! param get_num_bits must be ideponent
     # TODO: add parent reference to all grammar constructors because they need to be linked in both directions
-    def parse(self, stream):
+    def parse(self, stream, ctx=None):
         num_bits = self.get_num_bits(self)
         data, stream = stream.eat(num_bits)
         if data != None:
@@ -133,7 +133,7 @@ class DynamicBlob(Terminal):
         return self.data
 
 class Button(Terminal):
-    def parse(self, stream):
+    def parse(self, stream, ctx=None):
         if len(stream) == 0:
             yield ParsingProgress(self, stream)
     def __init__(self):

@@ -80,8 +80,8 @@ class Wrapper(NonBranchingNonTerminal):
         self.child = child
     def __str__(self):
         return str(self.child)
-    def parse(self, stream):
-        for parsing_progress in self.child.parse(stream):
+    def parse(self, stream, ctx=None):
+        for parsing_progress in self.child.parse(stream, ctx):
             parsed_child, remaining_stream = parsing_progress.get_tuple()
             yield ParsingProgress(self.__class__(parsed_child), remaining_stream)
     def fuzz(self):

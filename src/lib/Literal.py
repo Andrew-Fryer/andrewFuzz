@@ -10,7 +10,7 @@ class Literal(Terminal):
         else:
             assert False
         self._length = len(self._value)
-    def parse(self, stream):
+    def parse(self, stream, ctx=None):
         data, remaining_stream = stream.eat(self._length)
         if data == self._value:
             yield ParsingProgress(self, remaining_stream)
