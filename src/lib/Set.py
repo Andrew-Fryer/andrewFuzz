@@ -7,7 +7,7 @@ class Set(UnNamedBranchingNonTerminal):
     def __init__(self, child_prototype, children=None):
         super().__init__(children)
         self.child_prototype = child_prototype
-        self.children = None
+        # self.children = None # why did I do this???
     def __parse__():
         raise NotImplementedError
 
@@ -18,7 +18,7 @@ class LengthSet(Set):
 
 class DynamicLengthSet(Set):
     # this is a set in which the length is known only at parse-time
-    def __init__(self, child_prototype, length_function, children=None):
+    def __init__(self, child_prototype, length_function, children=[]):
         super().__init__(child_prototype, children)
         self.length_function = length_function
     def parse(self, stream): # Note that this is very similar to `Sequence.parse`

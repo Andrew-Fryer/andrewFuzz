@@ -88,19 +88,19 @@ class Number(Blob):
     # TODO: override get_value, __str__, and fuzz
 
 class Uint8(Number):
-    def __init__(self, value):
+    def __init__(self, value: int=0):
         super().__init__(value, 1)
 
 class Uint16(Number):
-    def __init__(self, value):
+    def __init__(self, value: int=0):
         super().__init__(value, 2)
 
 class Uint32(Number):
-    def __init__(self, value):
+    def __init__(self, value: int=0):
         super().__init__(value, 4)
 
 class Uint64(Number):
-    def __init__(self, value):
+    def __init__(self, value: int=0):
         super().__init__(value, 8)
 
 class DynamicBlob(Terminal):
