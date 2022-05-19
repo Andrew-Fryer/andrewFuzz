@@ -10,6 +10,6 @@ from src.lib.Union import *
 from src.lib.Set import *
 from src.Constraint import *
 from src.lib.Terminal import *
-from src.core.Literal import *
+from src.lib.Literal import *
 
 # TODO: prune this to only expose classes that should be used in a grammar?
