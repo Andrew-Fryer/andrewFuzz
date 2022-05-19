@@ -14,7 +14,7 @@ dns = Sequence(children={
     'answer': DynamicLengthSet(resource_record, lambda this: this.parent.children['numAnswer'].get_value()),
     'authority': DynamicLengthSet(resource_record, lambda this: this.parent.children['numAuthority'].get_value()),
     'additional': DynamicLengthSet(resource_record, lambda this: this.parent.children['numAdditional'].get_value()),
-    'end': Button(),
+    # 'end': Button(),
 })
 
 domain = TerminatedSet()
