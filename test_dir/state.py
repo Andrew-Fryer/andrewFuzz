@@ -9,7 +9,8 @@ base_session_data = {
 }
 session_objects[0].reset(base_session_data)
 
-sign_in_grammar = Sequence({
+def sign_in_grammar():
+    return Sequence({
     'endpoint': Uint8(0),
     "email": String(session_state.get('user_email')),
     "password": String(session_state.get('password')),

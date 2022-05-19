@@ -46,6 +46,32 @@ Anything dependent on the fuzz is tied to that fuzz :|
     -> this means one global object won't work if the grammar can mutate it
 For now, I'm deciding to disallow the grammar from mutating state.
 
+Is there any reason that contraints between packets are different form those within a packet?
+It is feasible to swap state objects in between packets, but not during the fuzz of a single packet.
+Also, we may want to re-order packets as part of our fuzzing.
+Is it feasible to have a Session NonTerminal that takes care of all of this? (It would have packet grammars as its children.)
+
+Hold on; I thought of another problem :|
+Some SUTs won't be clonable. By that I mean that we can't serialize them at a stage in the protocol and duplicate them for each fuzz of the current stage.
+Instead, we'll have to replay the interactions in the previous stages to create a SUT instance that is at the correct stage and has been fed the same fuzz in the previous interactions.
+The issue here is that non-deterministic server responses will create differences in the session data for the session that created the fuzz and the session that the fuzz is being used in.
+Therefore, session data needs to be injected into fuzz after we've had an opportunity to set up the session that we are fuzzing.
+I can do pretty simply by only using session data during serialization (rather than fuzzing).
+Unfortunately, this forces us to know the number of fuzzy instances will be produced by a DataModel before knowing the session data.
+(The `fuzz` method can return instances that each know how they should fuzz differently once they are given the session data. This hurts me a bit on the inside, but they could then do compute the fuzz in the `serialize` method.)
+Alternatively, I could do the previous fuzzy stages many times, fuzzing the current stage DataModel each time (with the current session data) and then using the first fuzz after filtering out fuzz that we've tried before. This requires saving previous fuzz and a fancy equality operation that should probably return true for any two timestamps etc... This will also be incredibly inefficient.
+(Actually, the most pure way I can think of would be to repeatedly fuzz with session data and chose a fuzzy DataModel instance randomly.)
+If we know that the same fuzz of the current stage's DataModel will be produced for each session then we can just use take the ith fuzz (because we know that the filter will simply remove the first i fuzzy DataModel instances). In this case, we can also avoid the work of creating the first i fuzzy DataModel instances if we do the approach I thought of and wrote down a few lines up (we inject the session data in the `serialize` method.)
+The assumption I'd be making here is that "the fuzzing strategy is independent of non-determinism in the SUT's previous stages".
+I should probably create a comprehensive list of the assumptions AndrewFuzz makes about the SUT.
+-edge condition values of fields are known (and are in the fuzz methods of the primitives)
+-
+
+Another thing to consider:
+It could be way too slow to create a new SUT instance for each peice of fuzz.
+How can we fuzz effectively using the same instance?
+How can I design AndrewFuzz to allow us to exploit optimizations around that?? (maybe I should think of them as being more central than optimizations even.)
+
 A whole seperate problem is determining which responses from the System Under Test are "interesting".
 We can think of this as being a binary deal, where we test the output in some well-defined way.
 (Is the response the same as the response for the un-fuzzed case except for some timestamps and stuff?

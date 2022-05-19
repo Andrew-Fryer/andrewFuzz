@@ -1,3 +1,4 @@
+from src.ParsingProgress import ParsingProgress
 from .DataModel import DataModel
 from src.BinaryStream import bitarray
 
@@ -63,4 +64,17 @@ class NonBranchingNonTerminal(NonTerminal):
     pass
 
 class Wrapper(NonBranchingNonTerminal):
-    pass
+    def __init__(self, child):
+        super().__init__()
+        self.child = child
+    def __str__(self):
+        return str(self.child)
+    def parse(self, stream):
+        for parsing_progress in self.child.parse(stream):
+            parsed_child, remaining_stream = parsing_progress.get_tuple()
+            yield ParsingProgress(self.__class__(parsed_child), remaining_stream)
+    def fuzz(self):
+        for mutated_child in self.child.fuzz():
+            yield self.__class__(mutated_child)
+    def serialize(self):
+        return self.child.serialize()
