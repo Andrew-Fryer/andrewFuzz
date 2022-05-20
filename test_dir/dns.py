@@ -1,5 +1,8 @@
 from src.__init__ import *
 
+def debug():
+    return True
+
 query = Sequence()
 resource_record = PureUnion()
 
@@ -11,9 +14,9 @@ dns = Sequence(children={
     'numAuthority': Uint16(),
     'numAdditional': Uint16(),
     'question': DynamicLengthSet(query, lambda this: this.parent.children['numQuestion'].get_value()),
-    'answer': DynamicLengthSet(resource_record, lambda this: this.parent.children['numAnswer'].get_value()),
-    'authority': DynamicLengthSet(resource_record, lambda this: this.parent.children['numAuthority'].get_value()),
-    'additional': DynamicLengthSet(resource_record, lambda this: this.parent.children['numAdditional'].get_value()),
+    'answer': DynamicLengthSet(resource_record, lambda this: debug() and this.parent.children['numAnswer'].get_value()),
+    'authority': DynamicLengthSet(resource_record, lambda this: debug() and this.parent.children['numAuthority'].get_value()),
+    'additional': DynamicLengthSet(resource_record, lambda this: debug() and this.parent.children['numAdditional'].get_value()),
     # 'end': Button(),
 })
 
@@ -33,7 +36,7 @@ resource_record.set_potential_children([
         'class': Uint16(),
         'ttl': Uint32(),
         'dataLength': Uint16(),
-        'address': address,
+        'data': DynamicLengthSet(Byte(), lambda this: debug() and this.parent.children['dataLength'].get_value()),
     }),
     # todo
 ])

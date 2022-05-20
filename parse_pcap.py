@@ -39,7 +39,7 @@ for pcap_element in pcap_elements:
   ba.frombytes(dns_bin)
   stream = BinaryStream(ba)
   parse_results = list(dns.parse(stream))
-  # print(parse_results)
+  print(parse_results)
   if len(parse_results) == 1:
     parsed_packet, empty_stream = parse_results[0].get_tuple()
     num_parsed += 1

@@ -16,4 +16,4 @@ class Literal(Terminal):
         if data == self._value:
             yield ParsingProgress(self, remaining_stream)
         else:
-            print('literal matching failed!')
+            print('literal matching failed!', self._value)

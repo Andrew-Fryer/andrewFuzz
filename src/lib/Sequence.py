@@ -10,6 +10,8 @@ class Sequence(NamedBranchingNonTerminal):
             next_progress = []
             for parsed_children, remaining_stream in current_progress:
                 results = list(child.parse(remaining_stream, Ctx(c=parsed_children, p=ctx)))
+                if len(results) == 0:
+                    print("failed to parse", child_name)
                 for result in results:
                     new_child, result_stream = result.get_tuple()
                     parsed_children_copy = parsed_children.copy()
