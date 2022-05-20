@@ -44,10 +44,10 @@ for pcap_element in pcap_elements:
     parsed_packet, empty_stream = parse_results[0].get_tuple()
     num_parsed += 1
     print(parsed_packet)
-    break
+    # break
   else:
     num_failed += 1
-    break
+    # break
 
 print("parsed:", num_parsed, "skipped:", num_skipped, "failed:", num_failed)
 print()
