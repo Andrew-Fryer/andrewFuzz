@@ -5,7 +5,7 @@ from src.core.Ctx import Ctx
 class Set(UnNamedBranchingNonTerminal):
     # this is analogous to an array in c
     # this is an abstract class that does not know how the length of the set is determined
-    def __init__(self, child_prototype, children=None):
+    def __init__(self, child_prototype, children=[]):
         super().__init__(children)
         self.child_prototype = child_prototype
         # self.children = None # why did I do this???
@@ -14,19 +14,21 @@ class Set(UnNamedBranchingNonTerminal):
 
 class LengthSet(Set):
     # this is a set in which the length is known before parse-time
-    def __init__(self, child_prototype, length, children=None):
+    def __init__(self, child_prototype, length, children=[]):
         pass
         # todo
 
 class DynamicLengthSet(Set):
     # this is a set in which the length is known only at parse-time
-    def __init__(self, child_prototype, length_function, children=None):
+    def __init__(self, child_prototype, length_function, children=[]):
         super().__init__(child_prototype, children)
         self.length_function = length_function
     def parse(self, stream, ctx=None): # Note that this is very similar to `Sequence.parse`
         length = self.length_function(Ctx(p=ctx))
         current_progress = [([], stream)]
         for i in range(length):
+            # if length == 2 and i == 1:
+            #     foo = 'bar'
             next_progress = []
             for parsed_children, remaining_stream in current_progress:
                 results = list(self.child_prototype.parse(remaining_stream, Ctx(c=parsed_children, p=ctx)))
@@ -60,13 +62,15 @@ class TerminatedSet(Set):
         terminated = False
         while not terminated:
             results = list(self.child_prototype.parse(remaining_stream, cctx))
-            # assert len(results) == 1 # todo
             if len(results) == 0:
+                print('exiting terminated set because parsing', self.child_prototype, 'failed on', remaining_stream)
                 return
+            # TODO: handle a forest instead of just a tree
+            # assert len(results) == 1
             child, remaining_stream = results[0].get_tuple()
             children.append(child)
             terminated = self.terminate_function(child)
-        yield TerminatedSet(self.child_prototype, self.terminate_function, children)
+        yield ParsingProgress(TerminatedSet(self.child_prototype, self.terminate_function, children), remaining_stream)
 
 class SymbolTerminatedSet(Set):
     # this is a set in which the end of the set is indicated by some special symbol
