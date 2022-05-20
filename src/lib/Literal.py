@@ -15,5 +15,5 @@ class Literal(Terminal):
         data, remaining_stream = stream.eat(self._length)
         if data == self._value:
             yield ParsingProgress(self, remaining_stream)
-        else:
-            print('literal matching failed!', self._value)
+        # else:
+        #     print('literal matching failed!', self._value)

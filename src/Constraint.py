@@ -10,8 +10,8 @@ class Constraint(Wrapper):
             parsed_child, remaining_stream = progress_obj.get_tuple()
             if self.constraint_function(parsed_child): # pass in ctx too?
                 yield ParsingProgress(Constraint(parsed_child, self.constraint_function), remaining_stream)
-            else:
-                print('failed constraint', parsed_child)
+            # else:
+            #     print('failed constraint', parsed_child)
     def __str__(self):
         return "<Constraint " + str(self.child) + " >"
     def fuzz(self):

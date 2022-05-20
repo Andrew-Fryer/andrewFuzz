@@ -54,12 +54,12 @@ class Label(PureUnion):
 label = Label()
 def terminate_function(this):
     if not isinstance(this.child, Sequence):
-        print('encountered null')
+        # print('encountered null')
         return True
     if not 'letters' in this.child.children:
-        print('encountered ref')
+        # print('encountered ref')
         return True
-    print('encountered letters')
+    # print('encountered letters')
     return False
 domain.set_details(label, terminate_function)
 # domain.set_details(label, lambda this: not isinstance(this.child, Sequence) or not hasattr(this.child.children, 'letters'))

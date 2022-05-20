@@ -45,6 +45,8 @@ for pcap_element in pcap_elements:
     num_parsed += 1
     print(parsed_packet)
     # break
+  elif len(parse_results) > 1:
+    print('found ambiguous packet')
   else:
     num_failed += 1
     # break

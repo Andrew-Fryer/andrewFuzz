@@ -63,7 +63,7 @@ class TerminatedSet(Set):
         while not terminated:
             results = list(self.child_prototype.parse(remaining_stream, cctx))
             if len(results) == 0:
-                print('exiting terminated set because parsing', self.child_prototype, 'failed on', remaining_stream)
+                # print('exiting terminated set because parsing', self.child_prototype, 'failed on', remaining_stream)
                 return
             # TODO: handle a forest instead of just a tree
             # assert len(results) == 1
