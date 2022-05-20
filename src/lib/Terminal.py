@@ -136,6 +136,8 @@ class Button(Terminal):
     def parse(self, stream, ctx=None):
         if len(stream) == 0:
             yield ParsingProgress(self, stream)
+        else:
+            print('failed to parse button')
     def __init__(self):
         pass
     def __str__(self):

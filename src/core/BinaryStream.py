@@ -8,7 +8,7 @@ class BinaryStream:
         self.bits = bits if isinstance(bits, bitarray) else bitarray(bits)
         self.pos = pos
     def __str__(self):
-        return str(self.bits[self.pos:])
+        return '<stream ' + str(self.pos) + ' | ' + str(self.bits[self.pos:self.pos+5*8].tobytes()) + '...>'
     def clone(self):
         return BinaryStream(self.bits, self.pos)
     def eat(self, num_bits=8):
