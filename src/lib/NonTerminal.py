@@ -9,6 +9,7 @@ class NonTerminal(DataModel):
 
 class BranchingNonTerminal(NonTerminal):
     def __init__(self, children=None):
+        self.children = None
         if children != None:
             self.link_children(children)
     def link_children(self, children):

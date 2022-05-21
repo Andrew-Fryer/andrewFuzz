@@ -3,17 +3,28 @@ from src.lib.Terminal import Terminal
 from src.core.ParsingProgress import ParsingProgress
 
 class Literal(Terminal):
-    def __init__(self, literal_value, num_bits=None):
+    def __init__(self, literal_value, value=None, num_bits=None):
         if isinstance(literal_value, str):
-            self._value = bitarray(literal_value)
+            self.literal_value = bitarray(literal_value)
         elif isinstance(literal_value, bitarray):
-            self._value = literal_value
+            self.literal_value = literal_value
         else:
             assert False
-        self._length = len(self._value)
+        if isinstance(literal_value, str):
+            self.value = bitarray(literal_value)
+        elif isinstance(literal_value, bitarray):
+            self.value = literal_value
+        else:
+            self.value = None
+        self.literal_length = len(self.literal_value)
     def parse(self, stream, ctx=None):
-        data, remaining_stream = stream.eat(self._length)
-        if data == self._value:
+        data, remaining_stream = stream.eat(self.literal_length)
+        if data == self.literal_value:
             yield ParsingProgress(self, remaining_stream)
         # else:
         #     print('literal matching failed!', self._value)
+    def fuzz(self):
+        yield self
+        # todo add fuzz
+    def serialize(self):
+        return self.value
