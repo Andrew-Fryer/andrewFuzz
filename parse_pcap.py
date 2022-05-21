@@ -35,23 +35,24 @@ for pcap_element in pcap_elements:
   if dns_bin == b'':
     num_skipped += 1
     continue
-  if i >= 2:
-    dns_bin = pcap_element_to_dns(pcap_element)
-    ba = bitarray()
-    ba.frombytes(dns_bin)
-    stream = BinaryStream(ba)
-    parse_results = list(dns.parse(stream))
-    print('here, parse results:', parse_results)
-    if len(parse_results) == 1:
-      parsed_packet, empty_stream = parse_results[0].get_tuple()
-      num_parsed += 1
-      # print(parsed_packet)
-      # break
-    elif len(parse_results) > 1:
-      print('found ambiguous packet')
-    else:
-      num_failed += 1
-      # break
+  dns_bin = pcap_element_to_dns(pcap_element)
+  ba = bitarray()
+  ba.frombytes(dns_bin)
+  stream = BinaryStream(ba)
+  parse_results = list(dns.parse(stream))
+  print('here, parse results:', parse_results)
+  if len(parse_results) == 1:
+    parsed_packet, empty_stream = parse_results[0].get_tuple()
+    num_parsed += 1
+    print(parsed_packet)
+    for f in parsed_packet.fuzz():
+      print(f.serialize())
+    # break
+  elif len(parse_results) > 1:
+    print('found ambiguous packet')
+  else:
+    num_failed += 1
+    # break
   i += 1
 
 print("parsed:", num_parsed, "skipped:", num_skipped, "failed:", num_failed)
