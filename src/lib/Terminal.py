@@ -71,7 +71,6 @@ class Blob(Terminal):
         yield Blob(bitarray('1' * self.num_bits))
         yield Blob(bitarray('0' * (self.num_bits - 1) + '1'))
         yield Blob(bitarray('1' * (self.num_bits - 1) + '0'))
-        yield Blob(bitarray('')) # this breaks the structure
     def serialize(self):
         return self.data
 
@@ -128,7 +127,6 @@ class DynamicBlob(Terminal):
         num_bits = len(self.data)
         yield Blob(bitarray('0' * num_bits))
         yield Blob(bitarray('1' * num_bits))
-        yield Blob(bitarray('')) # this breaks the structure
     def serialize(self):
         return self.data
 
@@ -144,7 +142,7 @@ class Button(Terminal):
         return '()'
     def fuzz(self):
         yield Byte(bitarray(''))
-        yield Byte(bitarray('0'))
-        yield Byte(bitarray('1'))
+        yield Byte(bitarray('0')) # this breaks structure
+        yield Byte(bitarray('0' * 8)) # this breaks structure
     def serialize(self):
         return bitarray()

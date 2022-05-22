@@ -37,7 +37,7 @@ class PureUnion(Union):
         if potential_children != None:
             self.set_potential_children(potential_children)
     def fuzz(self):
-        for child in [self.child]: # + self.potential_children: # this causes infinite recursion for recursive grammars :|. Could I cap it somehow???
+        for child in self.potential_children: # this causes infinite recursion for recursive grammars :|. Could I cap it somehow???
             for child_data_model in child.fuzz():
                 yield PureUnion(potential_children=self.potential_children, child=child_data_model)
 

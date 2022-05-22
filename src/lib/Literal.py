@@ -1,5 +1,5 @@
 from src.core.BinaryStream import bitarray
-from src.lib.Terminal import Terminal
+from src.lib.Terminal import Terminal, Byte
 from src.core.ParsingProgress import ParsingProgress
 
 class Literal(Terminal):
@@ -25,6 +25,8 @@ class Literal(Terminal):
         #     print('literal matching failed!', self._value)
     def fuzz(self):
         yield self
+        yield Byte(bitarray('0' * self.literal_length))
+        yield Byte(bitarray('1' * self.literal_length))
         # todo add fuzz
     def serialize(self):
         return self.value
