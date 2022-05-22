@@ -23,6 +23,10 @@ class Literal(Terminal):
             yield ParsingProgress(self, remaining_stream)
         # else:
         #     print('literal matching failed!', self._value)
+    def fuzz(self):
+        yield self
+        yield Byte(bitarray('0' * self.literal_length))
+        yield Byte(bitarray('1' * self.literal_length))
         # todo add fuzz
     def serialize(self):
         return self.value

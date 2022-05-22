@@ -1,3 +1,5 @@
+from copy import copy
+
 from src.lib.NonTerminal import NonBranchingNonTerminal
 from src.core.ParsingProgress import ParsingProgress
 from src.core.Ctx import Ctx
@@ -5,6 +7,8 @@ from src.core.Ctx import Ctx
 class Union(NonBranchingNonTerminal):
     # this is analogous to a union in c
     # this is an abstract class that does not know how to determine which option to parse
+    def set_child(self, child):
+        super().link_child(child)
     def set_potential_children(self, potential_children):
         self.potential_children = potential_children
         assert len(potential_children) > 0
@@ -37,7 +41,7 @@ class PureUnion(Union):
         if potential_children != None:
             self.set_potential_children(potential_children)
     def fuzz(self):
-        for child in self.potential_children: # this causes infinite recursion for recursive grammars :|. Could I cap it somehow???
+        for child in [self.child]: #self.potential_children: # this causes infinite recursion for recursive grammars :|. Could I cap it somehow???
             for child_data_model in child.fuzz():
                 c = copy(self)
                 c.set_child(child_data_model)

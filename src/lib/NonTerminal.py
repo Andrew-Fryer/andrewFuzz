@@ -1,3 +1,5 @@
+from copy import copy
+
 from src.core.ParsingProgress import ParsingProgress
 from src.core.DataModel import DataModel
 from src.core.BinaryStream import bitarray
@@ -95,6 +97,8 @@ class NonBranchingNonTerminal(NonTerminal):
 class Wrapper(NonBranchingNonTerminal):
     def __str__(self):
         return str(self.child)
+    def set_child(self, child):
+        super().link_child(child)
     def parse(self, stream, ctx_children=None):
         for parsing_progress in self.child.parse(stream, ctx_children):
             parsed_child, remaining_stream = parsing_progress.get_tuple()
