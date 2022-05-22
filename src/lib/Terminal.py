@@ -20,7 +20,9 @@ class Byte(Terminal):
         return self.data.to01()
     def fuzz(self):
         yield Byte(bitarray('00000000'))
+        yield Byte(bitarray('00000001'))
         yield Byte(bitarray('11111111'))
+        yield Byte(bitarray('11111110'))
         yield Byte(bitarray('10101010'))
     def serialize(self):
         return self.data

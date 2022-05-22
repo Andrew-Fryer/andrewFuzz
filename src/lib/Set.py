@@ -40,15 +40,6 @@ class DynamicLengthSet(Set):
             current_progress = next_progress
         for children, remaining_stream in current_progress:
             yield ParsingProgress(DynamicLengthSet(self.child_prototype, self.length_function, children=children), remaining_stream)
-    # eww, we can't just inherit `fuzz` because it involves calling a constructor with different args
-    # todo: use a shallow cloning mechanism to fix this
-    def fuzz(self):
-        for i in range(len(self.children)):
-            mutated_children = self.children[:]
-            for mutated_child in self.children[i].fuzz():
-                mutated_children[i] = mutated_child
-                yield DynamicLengthSet(self.child_prototype, self.length_function, mutated_children)
-
 
 class TerminatedSet(Set):
     # this is a set in which the end of the set is indicated by some condition

@@ -42,7 +42,9 @@ class NamedBranchingNonTerminal(BranchingNonTerminal):
             for mutated_child in child.fuzz():
                 mutated_children = self.children.copy()
                 mutated_children[child_name] = mutated_child
-                yield self.__class__(mutated_children) # eww, this will break if the sub-class takes different parameters...
+                c = copy(self)
+                c.set_children(mutated_children)
+                yield c
     def serialize(self):
         result = bitarray()
         for child in self.children.values(): # this works because python dicts preserve order
@@ -66,7 +68,9 @@ class UnNamedBranchingNonTerminal(BranchingNonTerminal):
             mutated_children = self.children[:]
             for mutated_child in self.children[i].fuzz():
                 mutated_children[i] = mutated_child
-                yield self.__class__(mutated_children) # eww, this will break if the sub-class takes different parameters...
+                c = copy(self)
+                c.set_children(mutated_children)
+                yield c
     def serialize(self):
         result = bitarray()
         for child in self.children:
