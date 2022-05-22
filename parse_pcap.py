@@ -45,9 +45,11 @@ for pcap_element in pcap_elements:
     parsed_packet, empty_stream = parse_results[0].get_tuple()
     num_parsed += 1
     print(parsed_packet)
+    j = 0
     for f in parsed_packet.fuzz():
       print(f.serialize())
-      break
+      j += 1
+      # break
     # break
   elif len(parse_results) > 1:
     print('found ambiguous packet')

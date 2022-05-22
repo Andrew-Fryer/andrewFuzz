@@ -39,8 +39,8 @@ class NamedBranchingNonTerminal(BranchingNonTerminal):
         return result
     def fuzz(self):
         for child_name, child in self.children.items():
-            mutated_children = self.children.copy()
             for mutated_child in child.fuzz():
+                mutated_children = self.children.copy()
                 mutated_children[child_name] = mutated_child
                 yield self.__class__(mutated_children) # eww, this will break if the sub-class takes different parameters...
     def serialize(self):

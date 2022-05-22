@@ -79,6 +79,12 @@ class TerminatedSet(Set):
             children.append(child)
             terminated = self.terminate_function(child)
         yield ParsingProgress(TerminatedSet(self.child_prototype, self.terminate_function, children), remaining_stream)
+    def fuzz(self):
+        for i in range(len(self.children)):
+            mutated_children = self.children[:]
+            for mutated_child in self.children[i].fuzz():
+                mutated_children[i] = mutated_child
+                yield TerminatedSet(self.child_prototype, self.terminate_function, mutated_children)
 
 class SymbolTerminatedSet(Set):
     # this is a set in which the end of the set is indicated by some special symbol
