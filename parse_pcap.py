@@ -46,14 +46,14 @@ for pcap_element in pcap_elements:
   ba.frombytes(dns_bin)
   stream = BinaryStream(ba)
   parse_results = list(dns.parse(stream))
-  print('here, parse results:', parse_results)
+  # print('here, parse results:', parse_results)
   if len(parse_results) == 1:
     parsed_packet, empty_stream = parse_results[0].get_tuple()
     num_parsed += 1
-    print(parsed_packet)
+    # print(parsed_packet)
     j = 0
     for f in parsed_packet.fuzz():
-      print(f.serialize())
+      # print(f.serialize())
       j += 1
       n += 1
       # break
