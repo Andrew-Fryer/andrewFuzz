@@ -67,8 +67,8 @@ class UnNamedBranchingNonTerminal(BranchingNonTerminal):
         return result
     def fuzz(self):
         for i in range(len(self.children)):
-            mutated_children = self.children[:]
             for mutated_child in self.children[i].fuzz():
+                mutated_children = self.children[:]
                 mutated_children[i] = mutated_child
                 c = copy(self)
                 c.set_children(mutated_children)
