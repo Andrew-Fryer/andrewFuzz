@@ -5,6 +5,8 @@ from bitarray import bitarray
 from src.core.BinaryStream import BinaryStream
 from test_dir.dns import dns
 
+from time import time
+
 # if len(sys.argv) != 2:
 #   print("Please provide one arg (a pcap file).")
 #   sys.exit()
@@ -15,6 +17,8 @@ f = open(pcap_file, "rb")
 pcap = dpkt.pcapng.Reader(f)
 pcap_elements = list(pcap)
 f.close()
+
+start_time = time()
 
 num_parsed = 0
 num_skipped = 0
@@ -28,6 +32,8 @@ def pcap_element_to_dns(pcap_element):
   dns = udp.data
   return dns
 
+n = 0
+js = []
 i = 0
 for pcap_element in pcap_elements:
   dns_bin = pcap_element_to_dns(pcap_element)
@@ -49,6 +55,7 @@ for pcap_element in pcap_elements:
     for f in parsed_packet.fuzz():
       print(f.serialize())
       j += 1
+      n += 1
       # break
     # break
   elif len(parse_results) > 1:
@@ -56,7 +63,13 @@ for pcap_element in pcap_elements:
   else:
     num_failed += 1
     # break
+  js.append(j)
   i += 1
 
+end_time = time()
+elapsed_time = end_time - start_time
+
 print("parsed:", num_parsed, "skipped:", num_skipped, "failed:", num_failed)
+print("generated {} fuzzy packets in {} seconds".format(n, elapsed_time))
+print(js)
 print()
