@@ -41,7 +41,25 @@ class PureUnion(Union):
         if potential_children != None:
             self.set_potential_children(potential_children)
     def fuzz(self):
-        for child in [self.child]: #self.potential_children: # this causes infinite recursion for recursive grammars :|. Could I cap it somehow???
+        # ancestor_types = []
+        # node = self
+        # try:
+        #     while True:
+        #         ancestor_types.append(node.__class__)
+        #         node = node.parent
+        # except AttributeError:
+        #     pass
+
+        for child in self.potential_children:
+            # # prevent infinite recursion for recursive grammars
+            # threshold = 3
+            # # count num ancestors with same time
+            # num_same_ancestors = 0
+            # for a_t in ancestor_types:
+            #     if a_t == self.__class__:
+            #         num_same_ancestors += 1
+            # if num_same_ancestors > threshold:
+            #     continue
             for child_data_model in child.fuzz():
                 c = copy(self)
                 c.set_child(child_data_model)
