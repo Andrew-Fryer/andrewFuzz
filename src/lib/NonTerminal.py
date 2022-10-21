@@ -31,7 +31,8 @@ class BranchingNonTerminal(NonTerminal):
         v = FeatureVector({
             self.__class__.__name__: 1,
         })
-        v.merge([c.vectorize() for c in self.children])
+        child_data_models = self.children if isinstance(self.children, list) else self.children.values()
+        v.merge_children([c.vectorize() for c in child_data_models])
         return v
 
 class NamedBranchingNonTerminal(BranchingNonTerminal):

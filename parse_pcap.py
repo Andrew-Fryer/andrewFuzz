@@ -56,6 +56,8 @@ for pcap_element in pcap_elements:
       # print(f.serialize())
       j += 1
       n += 1
+      if True:
+        print(len(f.vectorize().to_list()))
       # break
     # break
   elif len(parse_results) > 1:
