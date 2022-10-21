@@ -3,6 +3,7 @@ from copy import copy
 from src.core.ParsingProgress import ParsingProgress
 from src.core.DataModel import DataModel
 from src.core.BinaryStream import bitarray
+from src.core.FeatureVector import FeatureVector
 
 class NonTerminal(DataModel):
     def set_parent(self, parent):
@@ -26,6 +27,12 @@ class BranchingNonTerminal(NonTerminal):
             children = children.values()
         for child in children:
             child.set_parent(self)
+    def vectorize(self): # TODO: inline data that is always present into the feature vector
+        v = FeatureVector({
+            self.__class__.__name__: 1,
+        })
+        v.merge([c.vectorize() for c in self.children])
+        return v
 
 class NamedBranchingNonTerminal(BranchingNonTerminal):
     def __init__(self, children: dict={}):
@@ -93,6 +100,12 @@ class NonBranchingNonTerminal(NonTerminal):
         Just be careful not to think the parent field in a DAG is the only parent.
         '''
         child.set_parent(self)
+    def vectorize(self):
+        v = FeatureVector({
+            self.__class__.__name__: 1,
+        })
+        v.merge([self.child.vectorize()])
+        return v
 
 class Wrapper(NonBranchingNonTerminal):
     def __str__(self):

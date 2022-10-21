@@ -1,11 +1,16 @@
 from src.core.BinaryStream import bitarray, bitarray_util
 from src.core.DataModel import DataModel
 from src.core.ParsingProgress import ParsingProgress
+from src.core.FeatureVector import FeatureVector
 
 class Terminal(DataModel):
     def set_parent(self, parent):
         # assert not self.parent
         self.parent = parent
+    def vectorize(self):
+        return FeatureVector({
+            self.__class__.__name__: 1,
+        })
 
 class Byte(Terminal):
     def parse(self, stream, ctx=None):

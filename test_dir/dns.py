@@ -1,4 +1,11 @@
+import sys
+import os
+# sys.path.append('..')
+sys.path.append(os.path.realpath(os.path.dirname(__file__) + '/../'))
+
 from src.__init__ import *
+# from src.__init__ import *
+# from ..src.__init import *
 
 def debug():
     return True
