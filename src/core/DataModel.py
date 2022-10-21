@@ -11,11 +11,15 @@ class Fuzzer:
     def fuzz(self):
         raise NotImplementedError
 
+class Vectorizer:
+    def vectorize(self):
+        raise NotImplementedError
+
 class Serializer:
     def serialize(self):
         raise NotImplementedError
 
-class DataModel(Parser, Fuzzer, Serializer): # wait a minute, why don't I use composition here?
+class DataModel(Parser, Fuzzer, Vectorizer, Serializer): # wait a minute, why don't I use composition here?
     # borrowing the name "DataModel" from Peach Fuzzer
     # An instance of this class is a:
     # -grammar    -> writing a grammar is done by calling the constructor
