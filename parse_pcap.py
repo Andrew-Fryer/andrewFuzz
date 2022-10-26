@@ -51,6 +51,7 @@ for pcap_element in pcap_elements:
   # print('here, parse results:', parse_results)
   if len(parse_results) == 1:
     parsed_packet, empty_stream = parse_results[0].get_tuple()
+    fv = parsed_packet.vectorize()
     num_parsed += 1
     # print(parsed_packet)
     j = 0
@@ -59,7 +60,8 @@ for pcap_element in pcap_elements:
       j += 1
       n += 1
       if True:
-        print(f.features([]))
+        delta = fv.dist(f.vectorize())
+        print(delta)
       # break
     # break
   elif len(parse_results) > 1:
