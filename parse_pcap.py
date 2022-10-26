@@ -47,6 +47,7 @@ js = []
 i = 0
 old_fv_list = None
 corpus_feature_vectors = []
+fuzzy_feature_vectors = []
 for pcap_element in pcap_elements:
   dns_bin = pcap_element_to_dns(pcap_element)
   
@@ -76,7 +77,9 @@ for pcap_element in pcap_elements:
       j += 1
       n += 1
       if True:
-        delta = fv.dist(f.vectorize())
+        fuzzy_fv = f.vectorize()
+        fuzzy_feature_vectors.append([i] + fuzzy_fv.to_list())
+        delta = fv.dist(fuzzy_fv)
         print('dist to sample:', delta)
       # break
     # break
@@ -91,7 +94,7 @@ for pcap_element in pcap_elements:
 end_time = time()
 elapsed_time = end_time - start_time
 
-save_to_csv(corpus_feature_vectors)
+save_to_csv([[-1] + fv for fv in corpus_feature_vectors] + fuzzy_feature_vectors)
 
 print("parsed:", num_parsed, "skipped:", num_skipped, "failed:", num_failed)
 print("generated {} fuzzy packets in {} seconds".format(n, elapsed_time))

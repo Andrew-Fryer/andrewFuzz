@@ -4,8 +4,13 @@ import matplotlib.pyplot as plt
 
 df = pd.read_csv('tmp.csv')
 
-pca = PCA(n_components=2)
-components = pca.fit_transform(df)
+y = df['label']
+x = df.drop(columns=['label'])
 
-plt.scatter(components[:, 0], components[:, 1])#, x=0, y=1) #, color=df['species'])
+pca = PCA(n_components=2)
+components = pca.fit_transform(x)
+
+plt.scatter(components[:, 0], components[:, 1], c=y)
 plt.show()
+
+print()
