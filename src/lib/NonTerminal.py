@@ -51,8 +51,10 @@ class BranchingNonTerminal(NonTerminal):
     def get_children_data_models(self):
         if isinstance(self.children, list):
             return self.children
-        else:
+        elif isinstance(self.children, dict):
             return self.children.values()
+        else:
+            assert(False)
 
 class NamedBranchingNonTerminal(BranchingNonTerminal):
     def __init__(self, children: dict={}):

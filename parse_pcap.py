@@ -4,17 +4,25 @@ from bitarray import bitarray
 
 from src.core.BinaryStream import BinaryStream
 from test_dir.dns import dns
+# from .csv import save_to_csv
+
+def save_to_csv(list_of_lists, filename='tmp.csv', header=None):
+    with open(filename, 'w') as f:
+        if header != None:
+            f.write(', '.join(header) + '/n')
+        f.writelines(', '.join(str(x) for x in row) + '\n' for row in list_of_lists)
 
 from time import time
 
 print(dns.features([]))
+base_fv = dns.vectorize()
 
 # if len(sys.argv) != 2:
 #   print("Please provide one arg (a pcap file).")
 #   sys.exit()
 
 # pcap_file = sys.argv[1]
-pcap_file = "../dns.pcap"
+pcap_file = "../dns_all_rr_types_udp.pcap"
 f = open(pcap_file, "rb")
 pcap = dpkt.pcapng.Reader(f)
 pcap_elements = list(pcap)
@@ -38,6 +46,7 @@ n = 0
 js = []
 i = 0
 old_fv_list = None
+corpus_feature_vectors = []
 for pcap_element in pcap_elements:
   dns_bin = pcap_element_to_dns(pcap_element)
   
@@ -53,9 +62,11 @@ for pcap_element in pcap_elements:
   if len(parse_results) == 1:
     parsed_packet, empty_stream = parse_results[0].get_tuple()
     fv = parsed_packet.vectorize()
+    print('dist to base:', base_fv.dist(fv))
     fv_list = fv.to_list()
+    corpus_feature_vectors.append(fv_list)
     if fv_list != old_fv_list:
-      print(fv_list)
+      # print(fv_list)
       old_fv_list = fv_list
     num_parsed += 1
     # print(parsed_packet)
@@ -66,7 +77,7 @@ for pcap_element in pcap_elements:
       n += 1
       if True:
         delta = fv.dist(f.vectorize())
-        # print(delta)
+        print('dist to sample:', delta)
       # break
     # break
   elif len(parse_results) > 1:
@@ -79,6 +90,8 @@ for pcap_element in pcap_elements:
 
 end_time = time()
 elapsed_time = end_time - start_time
+
+save_to_csv(corpus_feature_vectors)
 
 print("parsed:", num_parsed, "skipped:", num_skipped, "failed:", num_failed)
 print("generated {} fuzzy packets in {} seconds".format(n, elapsed_time))
