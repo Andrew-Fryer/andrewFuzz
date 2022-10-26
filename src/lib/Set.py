@@ -11,6 +11,8 @@ class Set(UnNamedBranchingNonTerminal):
         # self.children = None # why did I do this???
     def __parse__():
         raise NotImplementedError
+    def get_all_potential_children_data_models(self):
+        return [self.child_prototype]
 
 class LengthSet(Set):
     # this is a set in which the length is known before parse-time
@@ -23,6 +25,9 @@ class DynamicLengthSet(Set):
     def __init__(self, child_prototype, length_function, children=[]):
         super().__init__(child_prototype, children)
         self.length_function = length_function
+    def propagate(self, diffs):
+        children = diffs.get('children', self.children)
+        return self.__class__(self.child_prototype, self.length_function, children)
     def parse(self, stream, ctx=None): # Note that this is very similar to `Sequence.parse`
         length = self.length_function(Ctx(p=ctx))
         current_progress = [([], stream)]
@@ -39,7 +44,9 @@ class DynamicLengthSet(Set):
             
             current_progress = next_progress
         for children, remaining_stream in current_progress:
-            yield ParsingProgress(self.__class__(self.child_prototype, self.length_function, children=children), remaining_stream)
+            yield ParsingProgress(self.propagate({
+                'children': children,
+            }), remaining_stream)
 
 class TerminatedSet(Set):
     # this is a set in which the end of the set is indicated by some condition
@@ -69,7 +76,12 @@ class TerminatedSet(Set):
             child, remaining_stream = results[0].get_tuple()
             children.append(child)
             terminated = self.terminate_function(child)
-        yield ParsingProgress(self.__class__(self.child_prototype, self.terminate_function, children), remaining_stream)
+        yield ParsingProgress(self.propagate({
+            'children': children,
+        }), remaining_stream)
+    def propagate(self, diffs):
+        children = diffs.get('children', self.children)
+        return self.__class__(self.child_prototype, self.terminate_function, children)
     def fuzz(self):
         yield from super().fuzz()
 

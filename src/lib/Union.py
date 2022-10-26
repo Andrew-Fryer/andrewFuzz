@@ -36,9 +36,12 @@ class PureUnion(Union):
             for progress_obj in potential_child.parse(stream, cctx):
                 parsed_child, remaining_stream = progress_obj.get_tuple()
                 yield ParsingProgress(
-                    self.__class__(potential_children=self.potential_children, child=parsed_child),
-                    remaining_stream,
-                )
+                    self.propagate({
+                        'child': parsed_child,
+                    }), remaining_stream)
+    def propagate(self, diffs):
+        child = diffs.get('child', self.child)
+        return self.__class__(self.potential_children, child)
     def __init__(self, potential_children=None, child=None):
         super().__init__(child)
         if potential_children != None:

@@ -108,3 +108,7 @@ Helpful snippets:
 `bitarray(format(ord('a'), '08b')).tobytes().decode('ascii')`
 `python -m unittest test_dir.dns`
 
+
+
+I think I can rewrite a lot of inheritence a lot more nicely by having class properties like num_bits rather than passing that field around all the time, and the methods can all just use self.num_bits in their business...
+I'm pretty sure propagate can just take a `contents` field, which is either `children` or `child` or `data` depending on what type of node it is...

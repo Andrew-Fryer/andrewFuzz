@@ -5,6 +5,7 @@ class Breedable:
     def propagate(self, diffs: dict):
         # used by parsing and fuzzing processes instead of __init__
         # To be useful, the diffs dictionary is used to specify how the generated object should differ from self
+        # Basically, if your subclass overrides __init__, you also have to override this.
         raise NotImplementedError
 
 class Parser:

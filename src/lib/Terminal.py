@@ -16,9 +16,14 @@ class Byte(Terminal):
     def parse(self, stream, ctx=None):
         data, stream = stream.eat(8)
         if data != None:
-            yield ParsingProgress(self.__class__(data), stream)
+            yield ParsingProgress(self.propagate({
+                'data': data,
+            }), stream)
         # else:
         #     print('out of data')
+    def propagate(self, diffs):
+        data = diffs.get('data', self.data)
+        return self.__class__(data)
     def __init__(self, data=bitarray('00000000')):
         self.data = data
     def __str__(self):
@@ -40,7 +45,9 @@ class Flag(Terminal):
     def parse(self, stream, ctx=None):
         data, stream = stream.eat(1)
         if data != None:
-            yield ParsingProgress(self.__class__(data), stream)
+            yield ParsingProgress(self.propagate({
+                'data': data,
+            }), stream)
     def __init__(self, data=bitarray('0')):
         self.data = data
     def __str__(self):
@@ -53,10 +60,14 @@ class Flag(Terminal):
 
 class Blob(Terminal):
     # used when length is known at before parse-time
+    def propagate(self, diffs):
+        return self.__class__(diffs.get('data', self.data), self.num_bits)
     def parse(self, stream, ctx=None):
         data, stream = stream.eat(self.num_bits)
         if data != None:
-            yield ParsingProgress(self.__class__(data, num_bits=self.num_bits), stream)
+            yield ParsingProgress(self.propagate({
+                'data': data,
+            }), stream)
     def __init__(self, data=None, num_bits=None, num_bytes=None):
         if data != None:
             self.num_bits = len(data)
@@ -73,11 +84,22 @@ class Blob(Terminal):
         return self.data.to01()
     def get_value(self):
         return bitarray_util.ba2int(self.data)
+    def propagate(self, diffs):
+        data = diffs.get('data', self.data)
+        return self.__class__(data, self.num_bits)
     def fuzz(self):
-        yield Blob(bitarray('0' * self.num_bits))
-        yield Blob(bitarray('1' * self.num_bits))
-        yield Blob(bitarray('0' * (self.num_bits - 1) + '1'))
-        yield Blob(bitarray('1' * (self.num_bits - 1) + '0'))
+        yield self.propagate({
+            'data': bitarray('0' * self.num_bits),
+        })
+        yield self.propagate({
+            'data': bitarray('1' * self.num_bits),
+        })
+        yield self.propagate({
+            'data': bitarray('0' * (self.num_bits - 1) + '1'),
+        })
+        yield self.propagate({
+            'data': bitarray('1' * (self.num_bits - 1) + '0'),
+        })
     def serialize(self):
         return self.data
 
@@ -88,9 +110,17 @@ class String(Blob):
     # TODO: override get_value, __str__, and fuzz
 
 class Number(Blob):
+    def propagate(self, diffs):
+        return self.__class__(diffs.get('data', self.data), self.num_bits / 8)
     def __init__(self, value, num_bytes):
-        value_bytes = value.to_bytes(num_bytes, 'big')
-        data = ''.join([format(b, 'b').zfill(8) for b in value_bytes])
+        data = None
+        if isinstance(value, bitarray):
+            data = value
+        elif isinstance(value, int):
+            value_bytes = value.to_bytes(num_bytes, 'big')
+            data = ''.join([format(b, 'b').zfill(8) for b in value_bytes])
+        else:
+            assert(False)
         super().__init__(data)
     def get_value(self):
         return bitarray_util.ba2int(self.data, signed=False)
@@ -99,22 +129,22 @@ class Number(Blob):
     # TODO: override fuzz
 
 class Uint8(Number):
-    def __init__(self, value: int=0, num_bytes=1):
+    def __init__(self, value=0, num_bytes=1):
         assert(num_bytes == 1)
         super().__init__(value, num_bytes)
 
 class Uint16(Number):
-    def __init__(self, value: int=0, num_bytes=2):
+    def __init__(self, value=0, num_bytes=2):
         assert(num_bytes == 2)
         super().__init__(value, num_bytes)
 
 class Uint32(Number):
-    def __init__(self, value: int=0, num_bytes=4):
+    def __init__(self, value=0, num_bytes=4):
         assert(num_bytes == 4)
         super().__init__(value, num_bytes)
 
 class Uint64(Number):
-    def __init__(self, value: int=0, num_bytes=8):
+    def __init__(self, value=0, num_bytes=8):
         assert(num_bytes == 8)
         super().__init__(value, num_bytes)
 
@@ -122,11 +152,15 @@ class DynamicBlob(Terminal):
     # used when length is only known at parse-time
     # Warning! param get_num_bits must be ideponent
     # TODO: add parent reference to all grammar constructors because they need to be linked in both directions
+    def propagate(self, diffs):
+        return self.__class__(diffs.get('data', self.data), self.get_num_bits)
     def parse(self, stream, ctx=None):
         num_bits = self.get_num_bits(self)
         data, stream = stream.eat(num_bits)
         if data != None:
-            yield ParsingProgress(self.__class__(data, get_num_bits=self.get_num_bits), stream)
+            yield ParsingProgress(self.propagate({
+                'data': data,
+            }), stream)
     def __init__(self, data=bitarray(''), get_num_bits=lambda this: 0):
         self.get_num_bits = get_num_bits
         self.data = data
@@ -149,12 +183,16 @@ class Button(Terminal):
             print('failed to parse button')
     def __init__(self):
         pass
+    def propagate(self, diffs):
+        return self.__class__()
     def __str__(self):
         return '()'
     def fuzz(self):
         # shouldn't this return Buttons?
-        yield Byte(bitarray(''))
-        yield Byte(bitarray('0')) # this breaks structure
-        yield Byte(bitarray('0' * 8)) # this breaks structure
+        # yield Byte(bitarray(''))
+        # yield Byte(bitarray('0')) # this breaks structure
+        # yield Byte(bitarray('0' * 8)) # this breaks structure
+        for _ in []:
+            yield # yield 0 items
     def serialize(self):
         return bitarray()

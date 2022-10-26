@@ -21,4 +21,6 @@ class Sequence(NamedBranchingNonTerminal):
             current_progress = next_progress
         for children, remaining_stream in current_progress:
             # print('parsed seq:', Sequence(children=children))
-            yield ParsingProgress(self.__class__(children=children), remaining_stream)
+            yield ParsingProgress(self.propagate({
+                'child':children,
+            }), remaining_stream)

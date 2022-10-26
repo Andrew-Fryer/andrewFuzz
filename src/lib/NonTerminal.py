@@ -20,7 +20,7 @@ class NonTerminal(DataModel):
                 return []
         seen.append(self)
         features = [self.__class__.__name__]
-        child_data_models = self.get_children_data_models()
+        child_data_models = self.get_all_potential_children_data_models()
         for c in child_data_models:
             for f in c.features(seen):
                 if f not in features:
@@ -60,6 +60,9 @@ class NamedBranchingNonTerminal(BranchingNonTerminal):
     def set_children(self, children: dict):
         super().link_children(children)
     # `self.children` is a dict
+    def propagate(self, diffs):
+        children = diffs.get('children', self.children)
+        return self.__class__(children)
     def __str__(self):
         result = "{\n"
         for child_name, child in self.children.items():
@@ -131,9 +134,13 @@ class Wrapper(NonBranchingNonTerminal):
     def parse(self, stream, ctx_children=None):
         for parsing_progress in self.child.parse(stream, ctx_children):
             parsed_child, remaining_stream = parsing_progress.get_tuple()
-            yield ParsingProgress(self.__class__(parsed_child), remaining_stream)
+            yield ParsingProgress(self.propagate({
+                'child': parsed_child,
+            }), remaining_stream)
     def fuzz(self):
         for mutated_child in self.child.fuzz():
-            yield self.__class__(mutated_child)
+            yield self.propagate({
+                'child': mutated_child,
+            })
     def serialize(self):
         return self.child.serialize()
