@@ -9,7 +9,7 @@ class Constraint(Wrapper):
         for progress_obj in self.child.parse(stream):
             parsed_child, remaining_stream = progress_obj.get_tuple()
             if self.constraint_function(parsed_child): # pass in ctx too?
-                yield ParsingProgress(Constraint(parsed_child, self.constraint_function), remaining_stream)
+                yield ParsingProgress(self.__class__(parsed_child, self.constraint_function), remaining_stream)
             # else:
             #     print('failed constraint', parsed_child)
     def __str__(self):

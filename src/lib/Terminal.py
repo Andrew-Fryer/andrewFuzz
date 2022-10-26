@@ -7,16 +7,16 @@ class Terminal(DataModel):
     def set_parent(self, parent):
         # assert not self.parent
         self.parent = parent
-    def vectorize(self):
-        return FeatureVector({
-            self.__class__.__name__: 1,
-        })
+    def features(self, seen):
+        return [self.__class__.__name__]
+    def do_vectorization(self, v, depth):
+        v.tally(self.__class__.__name__, depth)
 
 class Byte(Terminal):
     def parse(self, stream, ctx=None):
         data, stream = stream.eat(8)
         if data != None:
-            yield ParsingProgress(Byte(data), stream)
+            yield ParsingProgress(self.__class__(data), stream)
         # else:
         #     print('out of data')
     def __init__(self, data=bitarray('00000000')):
@@ -40,7 +40,7 @@ class Flag(Terminal):
     def parse(self, stream, ctx=None):
         data, stream = stream.eat(1)
         if data != None:
-            yield ParsingProgress(Flag(data), stream)
+            yield ParsingProgress(self.__class__(data), stream)
     def __init__(self, data=bitarray('0')):
         self.data = data
     def __str__(self):
@@ -56,7 +56,7 @@ class Blob(Terminal):
     def parse(self, stream, ctx=None):
         data, stream = stream.eat(self.num_bits)
         if data != None:
-            yield ParsingProgress(Blob(data, num_bits=self.num_bits), stream)
+            yield ParsingProgress(self.__class__(data, num_bits=self.num_bits), stream)
     def __init__(self, data=None, num_bits=None, num_bytes=None):
         if data != None:
             self.num_bits = len(data)
@@ -99,20 +99,24 @@ class Number(Blob):
     # TODO: override fuzz
 
 class Uint8(Number):
-    def __init__(self, value: int=0):
-        super().__init__(value, 1)
+    def __init__(self, value: int=0, num_bytes=1):
+        assert(num_bytes == 1)
+        super().__init__(value, num_bytes)
 
 class Uint16(Number):
-    def __init__(self, value: int=0):
-        super().__init__(value, 2)
+    def __init__(self, value: int=0, num_bytes=2):
+        assert(num_bytes == 2)
+        super().__init__(value, num_bytes)
 
 class Uint32(Number):
-    def __init__(self, value: int=0):
-        super().__init__(value, 4)
+    def __init__(self, value: int=0, num_bytes=4):
+        assert(num_bytes == 4)
+        super().__init__(value, num_bytes)
 
 class Uint64(Number):
-    def __init__(self, value: int=0):
-        super().__init__(value, 8)
+    def __init__(self, value: int=0, num_bytes=8):
+        assert(num_bytes == 8)
+        super().__init__(value, num_bytes)
 
 class DynamicBlob(Terminal):
     # used when length is only known at parse-time
@@ -122,7 +126,7 @@ class DynamicBlob(Terminal):
         num_bits = self.get_num_bits(self)
         data, stream = stream.eat(num_bits)
         if data != None:
-            yield ParsingProgress(DynamicBlob(data, get_num_bits=self.get_num_bits), stream)
+            yield ParsingProgress(self.__class__(data, get_num_bits=self.get_num_bits), stream)
     def __init__(self, data=bitarray(''), get_num_bits=lambda this: 0):
         self.get_num_bits = get_num_bits
         self.data = data
@@ -148,6 +152,7 @@ class Button(Terminal):
     def __str__(self):
         return '()'
     def fuzz(self):
+        # shouldn't this return Buttons?
         yield Byte(bitarray(''))
         yield Byte(bitarray('0')) # this breaks structure
         yield Byte(bitarray('0' * 8)) # this breaks structure

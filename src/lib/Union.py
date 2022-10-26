@@ -3,6 +3,7 @@ from copy import copy
 from src.lib.NonTerminal import NonBranchingNonTerminal
 from src.core.ParsingProgress import ParsingProgress
 from src.core.Ctx import Ctx
+from src.core.FeatureVector import FeatureVector
 
 class Union(NonBranchingNonTerminal):
     # this is analogous to a union in c
@@ -22,6 +23,8 @@ class Union(NonBranchingNonTerminal):
             result += "\t| " + str(child) + " ***" if child == self.child else "" + "\n"
         result += ")"
         return result
+    def get_all_potential_children_data_models(self):
+        return self.potential_children
     def serialize(self):
         return self.child.serialize()
 
@@ -33,7 +36,7 @@ class PureUnion(Union):
             for progress_obj in potential_child.parse(stream, cctx):
                 parsed_child, remaining_stream = progress_obj.get_tuple()
                 yield ParsingProgress(
-                    PureUnion(potential_children=self.potential_children, child=parsed_child),
+                    self.__class__(potential_children=self.potential_children, child=parsed_child),
                     remaining_stream,
                 )
     def __init__(self, potential_children=None, child=None):

@@ -39,7 +39,7 @@ class DynamicLengthSet(Set):
             
             current_progress = next_progress
         for children, remaining_stream in current_progress:
-            yield ParsingProgress(DynamicLengthSet(self.child_prototype, self.length_function, children=children), remaining_stream)
+            yield ParsingProgress(self.__class__(self.child_prototype, self.length_function, children=children), remaining_stream)
 
 class TerminatedSet(Set):
     # this is a set in which the end of the set is indicated by some condition
@@ -69,7 +69,7 @@ class TerminatedSet(Set):
             child, remaining_stream = results[0].get_tuple()
             children.append(child)
             terminated = self.terminate_function(child)
-        yield ParsingProgress(TerminatedSet(self.child_prototype, self.terminate_function, children), remaining_stream)
+        yield ParsingProgress(self.__class__(self.child_prototype, self.terminate_function, children), remaining_stream)
     def fuzz(self):
         yield from super().fuzz()
 

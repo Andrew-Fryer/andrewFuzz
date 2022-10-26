@@ -7,6 +7,8 @@ from test_dir.dns import dns
 
 from time import time
 
+print(dns.features([]))
+
 # if len(sys.argv) != 2:
 #   print("Please provide one arg (a pcap file).")
 #   sys.exit()
@@ -57,7 +59,7 @@ for pcap_element in pcap_elements:
       j += 1
       n += 1
       if True:
-        print(len(f.vectorize().to_list()))
+        print(f.features([]))
       # break
     # break
   elif len(parse_results) > 1:

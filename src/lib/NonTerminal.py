@@ -9,6 +9,27 @@ class NonTerminal(DataModel):
     def set_parent(self, parent):
         # assert not self.parent
         self.parent = parent
+    def get_children_data_models(self):
+        raise NotImplementedError
+    def get_all_potential_children_data_models(self):
+        return self.get_children_data_models() # to be overridden by Union
+    def features(self, seen):
+        for el in seen:
+            if self is el: # note that python sets use equality rather than identity
+                # this should prevent infinite recursion for cyclic grammars
+                return []
+        seen.append(self)
+        features = [self.__class__.__name__]
+        child_data_models = self.get_children_data_models()
+        for c in child_data_models:
+            for f in c.features(seen):
+                if f not in features:
+                    features.append(f)
+        return features
+    def do_vectorization(self, v, depth): # TODO: inline data that is always present into the feature vector
+        v.tally(self.__class__.__name__, depth)
+        for c in self.get_children_data_models():
+            c.do_vectorization(v, depth + 1)
 
 class BranchingNonTerminal(NonTerminal):
     def __init__(self, children=None):
@@ -27,13 +48,11 @@ class BranchingNonTerminal(NonTerminal):
             children = children.values()
         for child in children:
             child.set_parent(self)
-    def vectorize(self): # TODO: inline data that is always present into the feature vector
-        v = FeatureVector({
-            self.__class__.__name__: 1,
-        })
-        child_data_models = self.children if isinstance(self.children, list) else self.children.values()
-        v.merge_children([c.vectorize() for c in child_data_models])
-        return v
+    def get_children_data_models(self):
+        if isinstance(self.children, list):
+            return self.children
+        else:
+            return self.children.values()
 
 class NamedBranchingNonTerminal(BranchingNonTerminal):
     def __init__(self, children: dict={}):
@@ -101,12 +120,8 @@ class NonBranchingNonTerminal(NonTerminal):
         Just be careful not to think the parent field in a DAG is the only parent.
         '''
         child.set_parent(self)
-    def vectorize(self):
-        v = FeatureVector({
-            self.__class__.__name__: 1,
-        })
-        v.merge([self.child.vectorize()])
-        return v
+    def get_children_data_models(self):
+        return [self.child]
 
 class Wrapper(NonBranchingNonTerminal):
     def __str__(self):
