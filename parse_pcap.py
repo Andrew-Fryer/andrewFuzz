@@ -37,6 +37,7 @@ def pcap_element_to_dns(pcap_element):
 n = 0
 js = []
 i = 0
+old_fv_list = None
 for pcap_element in pcap_elements:
   dns_bin = pcap_element_to_dns(pcap_element)
   
@@ -52,6 +53,10 @@ for pcap_element in pcap_elements:
   if len(parse_results) == 1:
     parsed_packet, empty_stream = parse_results[0].get_tuple()
     fv = parsed_packet.vectorize()
+    fv_list = fv.to_list()
+    if fv_list != old_fv_list:
+      print(fv_list)
+      old_fv_list = fv_list
     num_parsed += 1
     # print(parsed_packet)
     j = 0
@@ -61,7 +66,7 @@ for pcap_element in pcap_elements:
       n += 1
       if True:
         delta = fv.dist(f.vectorize())
-        print(delta)
+        # print(delta)
       # break
     # break
   elif len(parse_results) > 1:
