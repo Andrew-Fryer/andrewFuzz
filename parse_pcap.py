@@ -86,7 +86,7 @@ for pcap_element in pcap_elements:
   i += 1
 
 print('the size of the corpus is:', len(corpus))
-for i in range(5):
+for i in range(1):
   prev_corpus = dict(corpus)
   # corpus = {}
   for data_model in list(corpus.values()):
