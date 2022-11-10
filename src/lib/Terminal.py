@@ -7,6 +7,10 @@ class Terminal(DataModel):
     def set_parent(self, parent):
         # assert not self.parent
         self.parent = parent
+    def breed(self, other):
+        assert(isinstance(other, self.__class__))
+        yield self.propagate({})
+        yield other.propagate({})
     def features(self, seen):
         return [self.__class__.__name__]
     def do_vectorization(self, v, depth):
@@ -176,6 +180,9 @@ class DynamicBlob(Terminal):
         return self.data
 
 class Button(Terminal):
+    def breed(self, other):
+        assert(isinstance(other, self.__class__))
+        yield self.propagate({})
     def parse(self, stream, ctx=None):
         if len(stream) == 0:
             yield ParsingProgress(self, stream)

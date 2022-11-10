@@ -1,6 +1,7 @@
 import sys
 import dpkt
 from bitarray import bitarray
+import itertools
 
 from src.core.BinaryStream import BinaryStream
 from test_dir.dns import dns
@@ -89,8 +90,13 @@ for i in range(5):
   prev_corpus = dict(corpus)
   # corpus = {}
   for data_model in list(corpus.values()):
+    fuzz_iters = [] #[data_model.fuzz()]
+    for other in list(corpus.values()):
+      if other == data_model:
+        continue
+      fuzz_iters.append(data_model.breed(other))
     j = 0
-    for f in data_model.fuzz():
+    for f in itertools.chain.from_iterable(fuzz_iters):
       # print(f.serialize())
       j += 1
       fuzzy_fv = f.vectorize()

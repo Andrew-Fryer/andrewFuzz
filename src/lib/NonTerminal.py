@@ -79,6 +79,23 @@ class NamedBranchingNonTerminal(BranchingNonTerminal):
                 c = copy(self)
                 c.set_children(mutated_children)
                 yield c
+    def breed(self, other):
+        assert(isinstance(other, self.__class__))
+        children_even = {}
+        children_odd = {}
+        i = 0
+        for child_name in self.children.keys():
+            c_even, c_odd = (self.children[child_name], other.children[child_name]) if i & 1 else (other.children[child_name], self.children[child_name])
+            children_even[child_name] = c_even
+            children_odd[child_name] = c_odd
+            i += 1
+        yield self.propagate({
+            'children': children_even,
+        })
+        # we use other here just in case there is a different between self and other from a mutation I haven't dreamt up yet
+        yield other.propagate({
+            'children': children_odd,
+        })
     def serialize(self):
         result = bitarray()
         for child in self.children.values(): # this works because python dicts preserve order
@@ -105,6 +122,23 @@ class UnNamedBranchingNonTerminal(BranchingNonTerminal):
                 c = copy(self)
                 c.set_children(mutated_children)
                 yield c
+    def breed(self, other):
+        assert(isinstance(other, self.__class__))
+        all_children = self.children + other.children
+        children_odd = []
+        children_even = []
+        for c_ind in range(len(all_children)):
+            c = all_children[c_ind]
+            if c_ind & 1:
+                children_odd.append(c)
+            else:
+                children_even.append(c)
+        yield self.propagate({
+            'children': children_even,
+        })
+        yield other.propagate({
+            'children': children_odd,
+        })
     def serialize(self):
         result = bitarray()
         for child in self.children:
@@ -127,6 +161,10 @@ class NonBranchingNonTerminal(NonTerminal):
         child.set_parent(self)
     def get_children_data_models(self):
         return [self.child]
+    def breed(self, other):
+        assert(isinstance(other, self.__class__))
+        yield self.propagate({})
+        yield other.propagate({})
 
 class Wrapper(NonBranchingNonTerminal):
     def __str__(self):
