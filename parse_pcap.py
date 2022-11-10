@@ -43,11 +43,12 @@ def pcap_element_to_dns(pcap_element):
   return dns
 
 n = 0
-js = []
+# js = []
 i = 0
 old_fv_list = None
 corpus_feature_vectors = []
 fuzzy_feature_vectors = []
+corpus = {}
 for pcap_element in pcap_elements:
   dns_bin = pcap_element_to_dns(pcap_element)
   
@@ -63,7 +64,7 @@ for pcap_element in pcap_elements:
   if len(parse_results) == 1:
     parsed_packet, empty_stream = parse_results[0].get_tuple()
     fv = parsed_packet.vectorize()
-    print('dist to base:', base_fv.dist(fv))
+    # print('dist to base:', base_fv.dist(fv))
     fv_list = fv.to_list()
     corpus_feature_vectors.append(fv_list)
     if fv_list != old_fv_list:
@@ -71,26 +72,34 @@ for pcap_element in pcap_elements:
       old_fv_list = fv_list
     num_parsed += 1
     # print(parsed_packet)
-    j = 0
-    for f in parsed_packet.fuzz():
-      # print(f.serialize())
-      j += 1
-      n += 1
-      if True:
-        fuzzy_fv = f.vectorize()
-        fuzzy_feature_vectors.append([i] + fuzzy_fv.to_list())
-        delta = fv.dist(fuzzy_fv)
-        print('dist to sample:', delta)
-      # break
+    fv_tuple = tuple(fv_list)
+    if fv_tuple not in corpus:
+      corpus[fv_tuple] = parsed_packet
     # break
   elif len(parse_results) > 1:
     print('found ambiguous packet')
   else:
     num_failed += 1
     # break
-  js.append(j)
+  # js.append(j)
   i += 1
 
+print('the size of the corpus is:', len(corpus))
+for i in range(5):
+  prev_corpus = dict(corpus)
+  # corpus = {}
+  for data_model in list(corpus.values()):
+    j = 0
+    for f in data_model.fuzz():
+      # print(f.serialize())
+      j += 1
+      fuzzy_fv = f.vectorize()
+      fuzzy_fv_list = fuzzy_fv.to_list()
+      fuzzy_fv_tuple = tuple(fuzzy_fv_list)
+      if fuzzy_fv_tuple not in corpus:
+        corpus[fuzzy_fv_tuple] = f
+      # break
+  print('the size of the corpus is:', len(corpus))
 end_time = time()
 elapsed_time = end_time - start_time
 
@@ -98,5 +107,5 @@ save_to_csv([[-1] + fv for fv in corpus_feature_vectors] + fuzzy_feature_vectors
 
 print("parsed:", num_parsed, "skipped:", num_skipped, "failed:", num_failed)
 print("generated {} fuzzy packets in {} seconds".format(n, elapsed_time))
-print(js)
+# print(js)
 print()

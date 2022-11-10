@@ -112,3 +112,9 @@ Helpful snippets:
 
 I think I can rewrite a lot of inheritence a lot more nicely by having class properties like num_bits rather than passing that field around all the time, and the methods can all just use self.num_bits in their business...
 I'm pretty sure propagate can just take a `contents` field, which is either `children` or `child` or `data` depending on what type of node it is...
+
+I think I should have a chain of fuzzy objects back to the original!
+    Actually, I could implement this in propagate pretty easily!
+        I think the ideal is if parsing and fuzzing both uses `propagate`, but the link to the parent data model should have a label for how it was fuzzed or parsed...
+
+I can also cache feature vectors in DataModel and remove them in propagate (but still cache the list of properties).
