@@ -118,3 +118,5 @@ I think I should have a chain of fuzzy objects back to the original!
         I think the ideal is if parsing and fuzzing both uses `propagate`, but the link to the parent data model should have a label for how it was fuzzed or parsed...
 
 I can also cache feature vectors in DataModel and remove them in propagate (but still cache the list of properties).
+
+"def propagate(self, diffs):" -> "def propagate(self, **diffs):"

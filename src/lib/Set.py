@@ -5,29 +5,53 @@ from src.core.Ctx import Ctx
 class Set(UnNamedBranchingNonTerminal):
     # this is analogous to an array in c
     # this is an abstract class that does not know how the length of the set is determined
-    def __init__(self, child_prototype, children=[]):
+    def __init__(self, child_prototype, children=None):
         super().__init__(children)
         self.child_prototype = child_prototype
-        # self.children = None # why did I do this???
     def __parse__():
         raise NotImplementedError
     def get_all_potential_children_data_models(self):
         return [self.child_prototype]
 
+# Note that this is untested thus far
 class LengthSet(Set):
     # this is a set in which the length is known before parse-time
     def __init__(self, child_prototype, length, children=[]):
-        pass
-        # todo
+        super().__init__(child_prototype, children)
+        self.length = length
+    def set_details(self, **kwargs):
+        super().set_details(**kwargs)
+        self.length = kwargs['length']
+    def parse(self, stream, ctx=None):
+        current_progress = [([], stream)]
+        for i in range(self.length):
+            # if length == 2 and i == 1:
+            #     foo = 'bar'
+            next_progress = []
+            for parsed_children, remaining_stream in current_progress:
+                results = list(self.child_prototype.parse(remaining_stream, Ctx(c=parsed_children, p=ctx)))
+                for result in results:
+                    new_child, result_stream = result.get_tuple()
+                    next_progress.append((parsed_children + [new_child], result_stream))
+                    # I would love to use Monads here to do the higher-level stuff nicely :)
+            
+            current_progress = next_progress
+        for children, remaining_stream in current_progress:
+            yield ParsingProgress(self.propagate({
+                'children': children,
+            }), remaining_stream)
 
 class DynamicLengthSet(Set):
     # this is a set in which the length is known only at parse-time
     def __init__(self, child_prototype, length_function, children=[]):
         super().__init__(child_prototype, children)
         self.length_function = length_function
+    def set_details(self, **kwargs):
+        super().set_details(**kwargs)
+        self.length_function = kwargs['length_function']
     def propagate(self, diffs):
         children = diffs.get('children', self.children)
-        return self.__class__(self.child_prototype, self.length_function, children)
+        return self.__class__(child_prototype=self.child_prototype, length_function=self.length_function, children=children)
     def parse(self, stream, ctx=None): # Note that this is very similar to `Sequence.parse`
         length = self.length_function(Ctx(p=ctx))
         current_progress = [([], stream)]
@@ -51,9 +75,8 @@ class DynamicLengthSet(Set):
 class TerminatedSet(Set):
     # this is a set in which the end of the set is indicated by some condition
     def __init__(self, child_prototype=None, terminate_function=None, children=None):
-        if child_prototype != None:
-            super().__init__(child_prototype, children)
-        else:
+        super().__init__(child_prototype, children)
+        if child_prototype == None:
             assert(children == None)
         self.terminate_function = terminate_function
     def set_details(self, child_prototype, terminate_function, children=None):
@@ -81,7 +104,7 @@ class TerminatedSet(Set):
         }), remaining_stream)
     def propagate(self, diffs):
         children = diffs.get('children', self.children)
-        return self.__class__(self.child_prototype, self.terminate_function, children)
+        return self.__class__(child_prototype=self.child_prototype, terminate_function=self.terminate_function, children=children)
     def fuzz(self):
         yield from super().fuzz()
 
