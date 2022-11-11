@@ -33,6 +33,7 @@ class NonTerminal(DataModel):
 
 class BranchingNonTerminal(NonTerminal):
     def __init__(self, children=None):
+        super().__init__()
         self.children = None
         if children != None:
             self.link_children(children)
@@ -147,6 +148,7 @@ class UnNamedBranchingNonTerminal(BranchingNonTerminal):
 
 class NonBranchingNonTerminal(NonTerminal):
     def __init__(self, child=None):
+        super().__init__()
         self.child = None
         if child != None:
             self.link_child(child)

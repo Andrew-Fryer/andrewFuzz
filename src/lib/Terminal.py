@@ -29,6 +29,7 @@ class Byte(Terminal):
         data = diffs.get('data', self.data)
         return self.__class__(data)
     def __init__(self, data=bitarray('00000000')):
+        super().__init__()
         self.data = data
     def __str__(self):
         return self.data.to01()
@@ -53,6 +54,7 @@ class Flag(Terminal):
                 'data': data,
             }), stream)
     def __init__(self, data=bitarray('0')):
+        super().__init__()
         self.data = data
     def __str__(self):
         return self.data.to01()
@@ -73,6 +75,7 @@ class Blob(Terminal):
                 'data': data,
             }), stream)
     def __init__(self, data=None, num_bits=None, num_bytes=None):
+        super().__init__()
         if data != None:
             self.num_bits = len(data)
             self.data = data if isinstance(data, bitarray) else bitarray(data)
@@ -166,6 +169,7 @@ class DynamicBlob(Terminal):
                 'data': data,
             }), stream)
     def __init__(self, data=bitarray(''), get_num_bits=lambda this: 0):
+        super().__init__()
         self.get_num_bits = get_num_bits
         self.data = data
     def __str__(self):
@@ -188,8 +192,6 @@ class Button(Terminal):
             yield ParsingProgress(self, stream)
         else:
             print('failed to parse button')
-    def __init__(self):
-        pass
     def propagate(self, diffs):
         return self.__class__()
     def __str__(self):

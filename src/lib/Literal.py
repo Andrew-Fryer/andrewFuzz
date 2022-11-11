@@ -4,6 +4,7 @@ from src.core.ParsingProgress import ParsingProgress
 
 class Literal(Terminal):
     def __init__(self, literal_value, value=None, num_bits=None):
+        super().__init__()
         if isinstance(literal_value, str):
             self.literal_value = bitarray(literal_value)
         elif isinstance(literal_value, bitarray):

@@ -27,13 +27,18 @@ class Fuzzer:
         raise NotImplementedError
 
 class Vectorizer:
+    def __init__(self):
+        self._fv = None
     def features(self):
         raise NotImplementedError
     def do_vectorization(self, v, depth):
         raise NotImplementedError
     def vectorize(self):
+        if self._fv != None: #hasattr(self, '_fv') and self._fv != None:
+            return self._fv
         v = FeatureVector(self.features([]))
         self.do_vectorization(v, 0)
+        self._fv = v
         return v
 
 class Serializer:
@@ -48,4 +53,6 @@ class DataModel(Breedable, DupMutable, Parser, Fuzzer, Vectorizer, Serializer): 
     # -AST        -> it stores 
     # -fuzzer     -> it can produce mutated versions of itself (new instances of this class)
     # -serializer -> it can deparse its state by performing an inorder tree traversal
+    def __init__(self, **kwargs):
+        Vectorizer.__init__(self, **kwargs)
     pass
