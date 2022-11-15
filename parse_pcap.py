@@ -131,7 +131,7 @@ for i in range(5):
   prev_corpus = dict(corpus)
   # corpus = {}
   for data_model in list(corpus.values()):
-    fuzz_iters = [] #[data_model.fuzz()]
+    fuzz_iters = [data_model.fuzz()]
     for other in list(corpus.values()):
       if other == data_model:
         continue
@@ -142,9 +142,35 @@ for i in range(5):
       j += 1
       fuzzy_fv = f.vectorize()
       fuzzy_fv_list = fuzzy_fv.to_list()
-      fuzzy_fv_tuple = tuple(fuzzy_fv_list)
-      if fuzzy_fv_tuple not in corpus:
-        corpus[fuzzy_fv_tuple] = f
+      
+      req_bin = f.serialize().tobytes()
+      sut_start_time = time()
+      res_bin = run_sut(req_bin)
+      sut_end_time = time()
+      sut_time = sut_end_time - sut_start_time
+      if res_bin != None:
+        ba = bitarray()
+        ba.frombytes(res_bin)
+        stream = BinaryStream(ba)
+        res_parse_results = list(dns.parse(stream))
+        if len(res_parse_results) == 1:
+          res, empty_stream = res_parse_results[0].get_tuple()
+          res_fv = res.vectorize()
+          res_fv_list = res_fv.to_list()
+          fv_list = fuzzy_fv_list + res_fv_list + [sut_time]
+          fv_tuple = tuple(fv_list)
+          if fv_tuple not in corpus:
+            corpus[fv_tuple] = f
+        elif len(parse_results) > 1:
+          print('found ambiguous packet')
+        else:
+          print('failed to parse response')
+      else:
+        pass
+        # fv_list = req_fv_list + [0] * 16 + [sut_time]
+        # fv_tuple = tuple(fv_list)
+        # if fv_tuple not in corpus:
+        #   corpus[fv_tuple] = req
       # break
   print('the size of the corpus is:', len(corpus))
 end_time = time()
