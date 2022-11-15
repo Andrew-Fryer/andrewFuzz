@@ -2,6 +2,7 @@ import sys
 import dpkt
 from bitarray import bitarray
 import itertools
+import socket
 
 from src.core.BinaryStream import BinaryStream
 from test_dir.dns import dns
@@ -43,6 +44,22 @@ def pcap_element_to_dns(pcap_element):
   dns = udp.data
   return dns
 
+def dns_bin_is_req(dns_bin):
+  return not dns_bin[3] & (1 << 7)
+
+def run_sut(dns_bin):
+  try:
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.settimeout(0.10) # timeout after 100 milliseconds
+    sock.sendto(dns_bin, ('1.1.1.1', 53))
+    data, _ = sock.recvfrom(4096)
+    return data
+  except TimeoutError:
+    print('sut timed out')
+  finally:
+    sock.close()
+  return None
+
 n = 0
 # js = []
 i = 0
@@ -56,26 +73,50 @@ for pcap_element in pcap_elements:
   if dns_bin == b'':
     num_skipped += 1
     continue
-  dns_bin = pcap_element_to_dns(pcap_element)
+  if not dns_bin_is_req(dns_bin):
+    num_skipped += 1
+    continue
+
   ba = bitarray()
   ba.frombytes(dns_bin)
   stream = BinaryStream(ba)
   parse_results = list(dns.parse(stream))
   # print('here, parse results:', parse_results)
   if len(parse_results) == 1:
-    parsed_packet, empty_stream = parse_results[0].get_tuple()
-    fv = parsed_packet.vectorize()
+    req, empty_stream = parse_results[0].get_tuple()
+    req_fv = req.vectorize()
     # print('dist to base:', base_fv.dist(fv))
-    fv_list = fv.to_list()
-    corpus_feature_vectors.append(fv_list)
-    if fv_list != old_fv_list:
-      # print(fv_list)
-      old_fv_list = fv_list
-    num_parsed += 1
-    # print(parsed_packet)
-    fv_tuple = tuple(fv_list)
-    if fv_tuple not in corpus:
-      corpus[fv_tuple] = parsed_packet
+    req_fv_list = req_fv.to_list()
+
+    req_bin = req.serialize().tobytes()
+    assert(req_bin == dns_bin)
+    sut_start_time = time()
+    res_bin = run_sut(req_bin)
+    sut_end_time = time()
+    sut_time = sut_end_time - sut_start_time
+    if res_bin != None:
+      ba = bitarray()
+      ba.frombytes(res_bin)
+      stream = BinaryStream(ba)
+      res_parse_results = list(dns.parse(stream))
+      if len(res_parse_results) == 1:
+        res, empty_stream = res_parse_results[0].get_tuple()
+        res_fv = res.vectorize()
+        res_fv_list = res_fv.to_list()
+        fv_list = req_fv_list + res_fv_list + [sut_time]
+        fv_tuple = tuple(fv_list)
+        if fv_tuple not in corpus:
+          corpus[fv_tuple] = req
+      elif len(parse_results) > 1:
+        print('found ambiguous packet')
+      else:
+        print('failed to parse response')
+    else:
+      pass
+      # fv_list = req_fv_list + [0] * 16 + [sut_time]
+      # fv_tuple = tuple(fv_list)
+      # if fv_tuple not in corpus:
+      #   corpus[fv_tuple] = req
     # break
   elif len(parse_results) > 1:
     print('found ambiguous packet')
@@ -108,8 +149,6 @@ for i in range(5):
   print('the size of the corpus is:', len(corpus))
 end_time = time()
 elapsed_time = end_time - start_time
-
-save_to_csv([[-1] + fv for fv in corpus_feature_vectors] + fuzzy_feature_vectors)
 
 print("parsed:", num_parsed, "skipped:", num_skipped, "failed:", num_failed)
 print("generated {} fuzzy packets in {} seconds".format(n, elapsed_time))
