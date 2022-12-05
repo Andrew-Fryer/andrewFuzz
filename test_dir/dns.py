@@ -1,5 +1,6 @@
 import sys
 import os
+import bitarray as ba
 # sys.path.append('..')
 sys.path.append(os.path.realpath(os.path.dirname(__file__) + '/../'))
 
@@ -94,14 +95,14 @@ domain.set_details(label, terminate_function)
 # domain.set_details(label, lambda this: not isinstance(this.child, Sequence) or not hasattr(this.child.children, 'letters'))
 
 null = bitarray('0000 0000')
-c = bitarray('1100 0000')
+c = 0xc0 #bitarray('1100 0000')
 label.set_potential_children([
     Sequence({
-        'length': Constraint(Uint8(), lambda this: debug() and this.data != c and this.data != null),
+        'length': Constraint(Uint8(), lambda this: debug() and ba.util.ba2int(this.data) < c and this.data != null), # actually < 0x40
         'letters': DynamicLengthSet(Char(), lambda this: debug() and this.parent.children['length'].child.get_value()), # TODO: replace `lambda ...` with `helper("../length")`
     }),
     Sequence(children={
-        'marker': Literal(c), # 0xc0
+        'marker': Constraint(Uint8(), lambda this: debug() and ba.util.ba2int(this.data) >= c and this.data != null),
         'ref': Uint8(),
     }),
     Literal(null),
